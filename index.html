@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>هيبة الاسترخاء - نظام إدارة الاستلامات الاحترافي</title>
+<title>هيبة الاسترخاء - نظام إدارة الاستلامات</title>
 <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -13,28 +13,17 @@
 <style>
 *{font-family:'Cairo',sans-serif}
 .sig-canvas{border:2px dashed #94a3b8;border-radius:16px;touch-action:none;background:white;box-shadow:inset 0 2px 8px rgba(0,0,0,.05)}
-.glass{background:rgba(255,255,255,.9);backdrop-filter:blur(12px)}
-.gradient-teal{background:linear-gradient(135deg,#0f766e 0%,#14b8a6 100%)}
-.gradient-amber{background:linear-gradient(135deg,#d97706 0%,#f59e0b 100%)}
-.gradient-emerald{background:linear-gradient(135deg,#059669 0%,#10b981 100%)}
-.gradient-purple{background:linear-gradient(135deg,#7c3aed 0%,#a78bfa 100%)}
-.gradient-rose{background:linear-gradient(135deg,#e11d48 0%,#fb7185 100%)}
-.card-hover{transition:all .3s cubic-bezier(.4,0,.2,1)}
-.card-hover:hover{transform:translateY(-4px);box-shadow:0 20px 40px rgba(0,0,0,.1)}
-.shimmer{position:relative;overflow:hidden}
-.shimmer::after{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);transform:translateX(-100%);animation:shimmer 2s infinite}
-@keyframes shimmer{100%{transform:translateX(100%)}}
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
 @media print{
-  body *{visibility:hidden}
-  #printable-doc, #printable-doc *{visibility:visible}
-  #printable-doc{position:absolute;left:0;top:0;width:100%;background:white}
-  .no-print{visibility:hidden!important;display:none!important}
+  body *{visibility:hidden !important}
+  #printable-doc, #printable-doc *{visibility:visible !important}
+  #printable-doc{position:absolute !important;left:0 !important;top:0 !important;width:100% !important;background:white !important;padding:20px !important}
+  .no-print{display:none !important}
 }
 </style>
 </head>
 <body class="bg-[#f8fafc]">
 <div id="root"></div>
-<div id="modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);backdrop-filter:blur(8px);z-index:100;align-items:center;justify-content:center;padding:16px;overflow:auto"></div>
 
 <script type="text/babel">
 const { useState, useEffect, useRef } = React;
@@ -43,10 +32,10 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const T={
- ar:{login:"تسجيل الدخول",user:"اسم المستخدم",pass:"كلمة المرور",manager:"لوحة تحكم المدير",addEmp:"إضافة موظف جديد",name:"اسم الموظف",username:"اسم المستخدم",password:"كلمة المرور",nid:"رقم الهوية / الإقامة",phone:"رقم الجوال",job:"المسمى الوظيفي",lang:"لغة العامل",save:"حفظ الموظف ✨",empList:"فريق العمل",createRec:"إنشاء إيصال صرف جديد",shop:"اسم المحل / الجهة",amount:"المبلغ",curr:"العملة",reason:"المقابل / السبب",method:"طريقة الصرف",date:"تاريخ الصرف",notes:"ملاحظات إضافية",selectEmp:"اختر الموظف",pending:"معلق ⏳",confirmed:"مؤكد ✅",pendingTitle:"إيصالات بانتظار تأكيدك",history:"سجل استلاماتك الاحترافي",ack:"أقر أنا الموقع أدناه أنني استلمت المبلغ المذكور كاملاً",proof:"📸 تصوير إثبات الاستلام",sign:"✍️ توقيعك الشخصي",confirm:"تأكيد الاستلام النهائي",logout:"تسجيل خروج",welcome:"أهلاً وسهلاً",view:"عرض الوثيقة",print:"🖨️ طباعة الوثيقة",del:"حذف",noPending:"لا يوجد إيصالات معلقة حالياً ✅",dec:"أقر أنا الموقع أدناه {name} حامل هوية رقم {id} بأنني استلمت من {shop} مبلغ وقدره {amount} {curr} وذلك مقابل {reason} عن طريق {method} بتاريخ {date}. وهذا إقرار مني بذلك، وأتحمل كامل المسؤولية القانونية.",docTitle:"إقرار استلام - وثيقة قانونية معتبرة",totalRec:"إجمالي الإيصالات",totalEmp:"إجمالي الموظفون",totalPending:"بانتظار التأكيد",totalConfirmed:"تم تأكيدها",tableId:"رقم الإيصال",tableEmp:"الموظف",tableAmount:"المبلغ",tableReason:"السبب",tableDate:"التاريخ",tableStatus:"الحالة",tableAction:"الإجراء",search:"بحث باسم الموظف أو رقم الإيصال...",filterAll:"الكل",filterPending:"معلق فقط",filterConfirmed:"مؤكد فقط",copyReport:"📋 نسخ تقرير ثنائي اللغة",empDetail:"تفاصيل الموظف",stats:"الإحصائيات",recentRec:"أحدث الإيصالات",noEmp:"لا يوجد موظفون بعد - أضف أول موظف",noRec:"لا يوجد إيصالات بعد",legalFooter:"هذه الوثيقة معتبرة قانوناً بعد التوقيع وتوثيق الاستلام بالصورة - رقم التوثيق",createdAt:"تاريخ الإنشاء",confirmedAt:"تاريخ التأكيد"},
- id:{welcome:"Halo",pendingTitle:"Kwitansi menunggu konfirmasi Anda",history:"Riwayat Profesional Anda",ack:"Saya menyatakan telah menerima jumlah tersebut sepenuhnya",proof:"📸 Foto bukti penerimaan",sign:"✍️ Tanda tangan Anda",confirm:"Konfirmasi Akhir ✅",logout:"Keluar",view:"Lihat Dokumen",print:"🖨️ Cetak Dokumen",noPending:"Tidak ada yang menunggu ✅",dec:"Saya yang bertanda tangan di bawah ini {name} ID {id} menyatakan telah menerima dari {shop} sejumlah {amount} {curr} untuk {reason} melalui {method} pada tanggal {date}. Ini adalah pengakuan resmi saya.",docTitle:"Kwitansi Penerimaan - Dokumen Hukum Resmi",tableId:"No Resi",tableAmount:"Jumlah",tableReason:"Alasan",tableDate:"Tanggal",tableStatus:"Status",tableAction:"Aksi",totalRec:"Total Kwitansi"},
- tl:{welcome:"Kumusta",pendingTitle:"Resibo na naghihintay ng iyong kumpirmasyon",history:"Propesyonal na Talaan ng Pagtanggap",ack:"Pinatutunayan kong natanggap ko ang buong halaga",proof:"📸 Larawan ng patunay",sign:"✍️ Iyong Lagda",confirm:"Pangwakas na Kumpirmasyon ✅",logout:"Logout",view:"Tingnan Dokumento",print:"🖨️ I-print ang Dokumento",noPending:"Walang naghihintay ✅",dec:"Ako na nakalagda sa ibaba {name} ID {id} ay nagpapatunay na natanggap ko mula sa {shop} ang halagang {amount} {curr} para sa {reason} sa pamamagitan ng {method} noong {date}. Ito ang aking opisyal na pagkilala.",docTitle:"Resibo ng Pagtanggap - Legal na Dokumento",tableId:"Resibo No",tableAmount:"Halaga",tableReason:"Dahilan",tableDate:"Petsa",tableStatus:"Katayuan",tableAction:"Kilos",totalRec:"Kabuuang Resibo"},
- bn:{welcome:"হ্যালো",pendingTitle:"আপনার নিশ্চিতকরণের অপেক্ষায় থাকা রসিদ",history:"আপনার পেশাদার গ্রহণের রেকর্ড",ack:"আমি সম্পূর্ণ পরিমাণ গ্রহণ করেছি বলে স্বীকার করছি",proof:"📸 প্রমাণের ছবি তুলুন",sign:"✍️ আপনার স্বাক্ষর",confirm:"চূড়ান্ত নিশ্চিতকরণ ✅",logout:"লগআউট",view:"নথি দেখুন",print:"🖨️ নথি প্রিন্ট করুন",noPending:"কোন অপেক্ষমান নেই ✅",dec:"আমি নিম্ন স্বাক্ষরকারী {name} আইডি {id} এতদ্বারা স্বীকার করছি যে আমি {shop} থেকে {amount} {curr} পরিমাণ {reason} এর জন্য {method} এর মাধ্যমে {date} তারিখে গ্রহণ করেছি। এটি আমার আনুষ্ঠানিক স্বীকৃতি।",docTitle:"প্রাপ্তি স্বীকার - আইনি নথি",tableId:"রসিদ নং",tableAmount:"পরিমাণ",tableReason:"কারণ",tableDate:"তারিখ",tableStatus:"অবস্থা",tableAction:"কর্ম",totalRec:"মোট রসিদ"}
+ ar:{login:"تسجيل الدخول",user:"اسم المستخدم",pass:"كلمة المرور",manager:"لوحة تحكم المدير",addEmp:"إضافة موظف جديد",name:"اسم الموظف",username:"اسم المستخدم",password:"كلمة المرور",nid:"رقم الهوية",phone:"الجوال",job:"المسمى الوظيفي",lang:"لغة العامل",save:"حفظ الموظف ✨",empList:"فريق العمل",createRec:"إنشاء إيصال صرف جديد",shop:"المحل",amount:"المبلغ",curr:"العملة",reason:"المقابل / السبب",method:"الطريقة",date:"التاريخ",notes:"ملاحظات",selectEmp:"اختر الموظف",pending:"معلق ⏳",confirmed:"مؤكد ✅",pendingTitle:"إيصالات بانتظار تأكيدك",history:"سجل استلاماتك الاحترافي",ack:"أقر أنني استلمت المبلغ المذكور كاملاً",proof:"📸 تصوير إثبات الاستلام",sign:"✍️ توقيعك الشخصي",confirm:"تأكيد الاستلام النهائي",logout:"تسجيل خروج",welcome:"أهلاً وسهلاً",view:"عرض الوثيقة",print:"🖨️ طباعة الوثيقة",del:"حذف",noPending:"لا يوجد إيصالات معلقة حالياً ✅",dec:"أقر أنا الموقع أدناه {name} حامل هوية رقم {id} بأنني استلمت من {shop} مبلغ وقدره {amount} {curr} وذلك مقابل {reason} عن طريق {method} بتاريخ {date}. وهذا إقرار مني بذلك.",docTitle:"إقرار استلام - وثيقة قانونية معتبرة",totalRec:"إجمالي الإيصالات",tableId:"رقم الإيصال",tableAmount:"المبلغ",tableReason:"السبب",tableDate:"التاريخ",tableStatus:"الحالة",tableAction:"الإجراء",search:"بحث باسم الموظف أو رقم الإيصال...",legalFooter:"هذه الوثيقة معتبرة قانوناً بعد التوقيع وتوثيق الاستلام بالصورة - رقم التوثيق"},
+ id:{welcome:"Halo",pendingTitle:"Kwitansi menunggu konfirmasi",history:"Riwayat Profesional",ack:"Saya telah menerima jumlah tersebut",proof:"📸 Foto bukti",sign:"✍️ Tanda tangan",confirm:"Konfirmasi ✅",logout:"Keluar",view:"Lihat Dokumen",print:"🖨️ Cetak",noPending:"Tidak ada ✅",dec:"Saya {name} ID {id} telah menerima dari {shop} sejumlah {amount} {curr} untuk {reason} via {method} tanggal {date}.",docTitle:"Kwitansi Penerimaan - Dokumen Hukum",tableId:"No",tableAmount:"Jumlah",tableReason:"Alasan",tableDate:"Tanggal",tableStatus:"Status",tableAction:"Aksi"},
+ tl:{welcome:"Kumusta",pendingTitle:"Resibo na naghihintay",history:"Propesyonal na Talaan",ack:"Natanggap ko ang halaga",proof:"📸 Larawan",sign:"✍️ Lagda",confirm:"Kumpirmahin ✅",logout:"Logout",view:"Tingnan",print:"🖨️ I-print",noPending:"Wala ✅",dec:"Ako si {name} ID {id} ay tumanggap mula sa {shop} ng {amount} {curr} para sa {reason} via {method} noong {date}.",docTitle:"Resibo - Legal na Dokumento",tableId:"No",tableAmount:"Halaga",tableReason:"Dahilan",tableDate:"Petsa",tableStatus:"Status",tableAction:"Aksi"},
+ bn:{welcome:"হ্যালো",pendingTitle:"অপেক্ষায় থাকা রসিদ",history:"পেশাদার রেকর্ড",ack:"আমি গ্রহণ করেছি",proof:"📸 প্রমাণ",sign:"✍️ স্বাক্ষর",confirm:"নিশ্চিত করুন ✅",logout:"লগআউট",view:"দেখুন",print:"🖨️ প্রিন্ট",noPending:"নেই ✅",dec:"আমি {name} আইডি {id} {shop} থেকে {amount} {curr} {reason} এর জন্য {method} মাধ্যমে {date} তারিখে গ্রহণ করেছি।",docTitle:"প্রাপ্তি স্বীকার - আইনি নথি",tableId:"নং",tableAmount:"পরিমাণ",tableReason:"কারণ",tableDate:"তারিখ",tableStatus:"অবস্থা",tableAction:"কর্ম"}
 };
 
 function formatDec(tmpl,r){
@@ -57,12 +46,11 @@ function formatDec(tmpl,r){
 function SignaturePad({onSave}){
   const canvasRef=useRef(null);
   const [isDrawing,setIsDrawing]=useState(false);
-  const [hasSignature, setHasSignature] = useState(false);
   useEffect(()=>{
     const c=canvasRef.current; if(!c) return;
-    const ctx=c.getContext('2d'); ctx.lineWidth=2.5; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle='#0f172a';
+    const ctx=c.getContext('2d'); ctx.lineWidth=2.5; ctx.lineCap='round'; ctx.strokeStyle='#0f172a';
     const getPos=(e)=>{const rect=c.getBoundingClientRect(); const t=e.touches?e.touches[0]:e; return {x:t.clientX-rect.left, y:t.clientY-rect.top};};
-    const start=(e)=>{setIsDrawing(true); const p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); setHasSignature(true);};
+    const start=(e)=>{setIsDrawing(true); const p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y);};
     const move=(e)=>{if(!isDrawing)return; const p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke();};
     const end=()=>setIsDrawing(false);
     c.addEventListener('mousedown',start); c.addEventListener('mousemove',move); c.addEventListener('mouseup',end);
@@ -71,22 +59,17 @@ function SignaturePad({onSave}){
     c.addEventListener('touchend',end);
     return ()=>{c.removeEventListener('mousedown',start); c.removeEventListener('mousemove',move); c.removeEventListener('mouseup',end);};
   },[isDrawing]);
-  const clear=()=>{const c=canvasRef.current; c.getContext('2d').clearRect(0,0,c.width,c.height); onSave(''); setHasSignature(false);};
-  const save=()=>{const data=canvasRef.current.toDataURL(); if(data.length<1500){alert('من فضلك وقع أولاً');return;} onSave(data);};
-  return (
-    <div>
-      <canvas ref={canvasRef} width="600" height="180" className="sig-canvas w-full"></canvas>
-      <div className="flex gap-2 mt-3">
-        <button onClick={clear} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm font-bold transition">🗑️ مسح التوقيع</button>
-        <button onClick={save} className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-bold transition">💾 حفظ التوقيع</button>
-        {hasSignature && <span className="text-xs text-emerald-600 flex items-center mr-2">✅ تم الرسم - اضغط حفظ</span>}
-      </div>
-    </div>
-  );
+  const clear=()=>{const c=canvasRef.current; c.getContext('2d').clearRect(0,0,c.width,c.height); onSave('');};
+  const save=()=>{const data=canvasRef.current.toDataURL(); if(data.length<1500){alert('وقع أولاً');return;} onSave(data);};
+  return (<div><canvas ref={canvasRef} width="600" height="180" className="sig-canvas w-full"></canvas><div className="flex gap-2 mt-3"><button onClick={clear} className="px-4 py-2 bg-slate-100 rounded-xl text-sm font-bold">🗑️ مسح</button><button onClick={save} className="px-4 py-2 bg-teal-600 text-white rounded-xl text-sm font-bold">💾 حفظ التوقيع</button></div></div>);
 }
 
 function App(){
-  const [user,setUser]=useState(null);
+  const [user,setUser]=useState(()=>{
+    const saved = localStorage.getItem('heeba_session');
+    if(saved){ try{ return JSON.parse(saved); }catch(e){} }
+    return null;
+  });
   const [employees,setEmployees]=useState([]);
   const [receipts,setReceipts]=useState([]);
   const [loginU,setLoginU]=useState(''); const [loginP,setLoginP]=useState('');
@@ -99,6 +82,16 @@ function App(){
   const [rForm,setRForm]=useState({shop:'هيبة الاسترخاء',emp:'',amount:'',curr:'ريال سعودي',reason:'',method:'نقداً',date:new Date().toISOString().split('T')[0],notes:''});
 
   useEffect(()=>{loadData();},[]);
+  
+  // حفظ الجلسة عند تسجيل الدخول
+  useEffect(()=>{
+    if(user){
+      localStorage.setItem('heeba_session', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('heeba_session');
+    }
+  },[user]);
+
   async function loadData(){
     const {data: emps} = await supabase.from('employees').select('*').order('created_at',{ascending:false});
     const {data: recs} = await supabase.from('receipts').select('*').order('created_at',{ascending:false});
@@ -107,23 +100,37 @@ function App(){
   }
 
   async function doLogin(){
-    if(loginU==='هيبة الاسترخاء' && loginP==='123123'){setUser({role:'manager'}); return;}
+    if(loginU==='هيبة الاسترخاء' && loginP==='123123'){
+      const mgr = {role:'manager', data:{name:'المدير العام'}};
+      setUser(mgr);
+      return;
+    }
     const {data} = await supabase.from('employees').select('*').eq('username',loginU).eq('password',loginP).single();
-    if(data){setUser({role:'employee', data:data});} else {alert('❌ بيانات الدخول غير صحيحة - تأكد من اسم المستخدم وكلمة المرور');}
+    if(data){
+      const empUser = {role:'employee', data:data};
+      setUser(empUser);
+    } else {
+      alert('❌ بيانات الدخول غير صحيحة');
+    }
+  }
+
+  function doLogout(){
+    localStorage.removeItem('heeba_session');
+    setUser(null);
+    setViewDocRec(null);
   }
 
   async function addEmployee(){
-    if(!eForm.name||!eForm.username||!eForm.password){alert('⚠️ املأ الاسم واسم المستخدم وكلمة المرور');return;}
-    if(employees.find(e=>e.username===eForm.username)){alert('⚠️ اسم المستخدم موجود مسبقاً');return;}
+    if(!eForm.name||!eForm.username||!eForm.password){alert('⚠️ املأ الحقول المطلوبة');return;}
     const newEmp={id:'EMP-'+Math.floor(1000+Math.random()*9000), name:eForm.name, username:eForm.username, password:eForm.password, national_id:eForm.nid, phone:eForm.phone, job:eForm.job, language:eForm.lang};
     const {data, error}=await supabase.from('employees').insert(newEmp).select();
-    if(error){alert('خطأ: '+error.message);return;}
+    if(error){alert(error.message);return;}
     setEmployees([data[0],...employees]);
     setEForm({name:'',username:'',password:'',nid:'',phone:'',job:'',lang:'ar'});
   }
 
   async function createReceipt(){
-    if(!rForm.emp||!rForm.amount||!rForm.reason){alert('⚠️ اختر الموظف والمبلغ والسبب');return;}
+    if(!rForm.emp||!rForm.amount||!rForm.reason){alert('أكمل البيانات');return;}
     const emp=employees.find(e=>e.username===rForm.emp);
     const rec={id:'REC-'+new Date().getFullYear()+'-'+Math.floor(1000+Math.random()*9000), shop_name:rForm.shop, receiver_name:emp.name, receiver_username:emp.username, receiver_id:emp.national_id, amount:parseFloat(rForm.amount), currency:rForm.curr, reason:rForm.reason, method:rForm.method, date:rForm.date, notes:rForm.notes, status:'pending', language:emp.language};
     const {data, error}=await supabase.from('receipts').insert(rec).select();
@@ -133,7 +140,7 @@ function App(){
   }
 
   async function deleteReceipt(id){
-    if(!confirm('هل أنت متأكد من حذف هذا الإيصال؟')) return;
+    if(!confirm('حذف الإيصال؟')) return;
     const {error}=await supabase.from('receipts').delete().eq('id',id);
     if(error){alert(error.message);return;}
     setReceipts(prev=>prev.filter(r=>r.id!==id));
@@ -148,34 +155,26 @@ function App(){
 
   async function confirmReceipt(recId){
     const t=temp[recId];
-    if(!t?.checked){alert('⚠️ يجب الموافقة على الإقرار القانوني');return;}
-    if(!t?.evidence){alert('⚠️ يجب تصوير إثبات الاستلام');return;}
-    if(!t?.signature){alert('⚠️ يجب التوقيع وحفظ التوقيع');return;}
+    if(!t?.checked){alert('يجب الموافقة على الإقرار');return;}
+    if(!t?.evidence){alert('يجب تصوير الإثبات');return;}
+    if(!t?.signature){alert('يجب التوقيع');return;}
     const {error}=await supabase.from('receipts').update({status:'confirmed', confirmed_at:new Date().toISOString(), evidence_url:t.evidence, signature_url:t.signature}).eq('id',recId);
     if(error){alert(error.message);return;}
     setReceipts(prev=>prev.map(r=>r.id===recId?{...r,status:'confirmed', evidence_url:t.evidence, signature_url:t.signature, confirmed_at:new Date().toISOString()}:r));
-    alert('✅ تم تأكيد الاستلام بنجاح - تم حفظ الوثيقة القانونية');
-  }
-
-  function openDoc(r){
-    setViewDocRec(r);
-    document.getElementById('modal').style.display='flex';
+    alert('✅ تم التأكيد بنجاح');
   }
 
   if(!user){
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-teal-600 via-cyan-600 to-emerald-600 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,.15),transparent_50%)]"></div>
-        <div className="absolute top-20 left-20 w-72 h-72 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-teal-300/20 rounded-full blur-3xl"></div>
-        <div className="glass bg-white/95 p-10 rounded-[32px] shadow-[0_25px_80px_rgba(0,0,0,.2)] w-full max-w-md border border-white/20 relative">
-          <div className="w-20 h-20 gradient-teal rounded-[20px] flex items-center justify-center mx-auto mb-6 shadow-lg shadow-teal-500/30 text-3xl">🏢</div>
-          <h1 className="text-3xl font-black text-center text-slate-800 tracking-tight">هيبة الاسترخاء</h1>
-          <p className="text-center text-slate-500 text-sm mt-2 font-semibold">نظام إدارة استلامات العمال الاحترافي 🌐</p>
-          <div className="mt-2 flex justify-center gap-1.5"><span className="w-8 h-1.5 bg-teal-600 rounded-full"></span><span className="w-2 h-1.5 bg-slate-200 rounded-full"></span><span className="w-2 h-1.5 bg-slate-200 rounded-full"></span></div>
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-teal-600 via-cyan-600 to-emerald-600">
+        <div className="bg-white p-10 rounded-[32px] shadow-2xl w-full max-w-md">
+          <div className="w-20 h-20 bg-teal-700 rounded-[20px] flex items-center justify-center mx-auto mb-6 text-white text-3xl">🏢</div>
+          <h1 className="text-3xl font-black text-center">هيبة الاسترخاء</h1>
+          <p className="text-center text-slate-500 text-sm mt-2">نظام إدارة استلامات العمال</p>
           <div className="mt-8 space-y-4">
-            <div><label className="text-[13px] font-extrabold text-slate-700">اسم المستخدم</label><input value={loginU} onChange={e=>setLoginU(e.target.value)} className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl mt-2 focus:border-teal-500 focus:bg-white outline-none transition font-bold" placeholder="ادخل اسم المستخدم"/></div>
-            <div><label className="text-[13px] font-extrabold text-slate-700">كلمة المرور</label><input type="password" value={loginP} onChange={e=>setLoginP(e.target.value)} className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl mt-2 focus:border-teal-500 focus:bg-white outline-none transition font-bold" placeholder="••••••••"/><div className="mt-8"><button onClick={doLogin} className="w-full gradient-teal text-white p-4 rounded-2xl font-black text-[15px] shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transition-all hover:-translate-y-0.5">تسجيل الدخول ✨</button><div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-slate-400"><div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>نظام آمن ومشفر - متصل بـ Supabase</div></div></div>
+            <input value={loginU} onChange={e=>setLoginU(e.target.value)} className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold outline-none focus:border-teal-500" placeholder="اسم المستخدم"/>
+            <input type="password" value={loginP} onChange={e=>setLoginP(e.target.value)} className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold outline-none focus:border-teal-500" placeholder="كلمة المرور"/>
+            <button onClick={doLogin} className="w-full bg-teal-700 text-white p-4 rounded-2xl font-black">تسجيل الدخول ✨</button>
           </div>
         </div>
       </div>
@@ -190,80 +189,60 @@ function App(){
     });
     return (
       <div className="min-h-screen bg-[#f8fafc]">
-        <div className="bg-white/80 backdrop-blur-xl border-b border-slate-200/60 p-5 flex justify-between items-center sticky top-0 z-20 shadow-sm">
-          <div className="flex items-center gap-4"><div className="w-11 h-11 gradient-teal rounded-xl flex items-center justify-center text-white font-black">هـ</div><div><div className="font-black text-slate-800">لوحة تحكم المدير</div><div className="text-xs text-slate-500 font-bold">هيبة الاسترخاء • {employees.length} موظف • {receipts.length} إيصال</div></div></div>
-          <button onClick={()=>setUser(null)} className="px-5 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 rounded-xl font-bold transition">خروج</button>
-        </div>
-
+        <div className="bg-white border-b p-5 flex justify-between items-center sticky top-0 z-20"><b>👔 لوحة تحكم المدير</b><button onClick={doLogout} className="px-5 py-2.5 bg-red-50 text-red-700 rounded-xl font-bold">خروج</button></div>
         <div className="max-w-7xl mx-auto p-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white p-5 rounded-[20px] border border-slate-100 shadow-sm card-hover"><div className="flex justify-between"><div><div className="text-[11px] font-black text-slate-400 tracking-widest">إجمالي الإيصالات</div><div className="text-3xl font-black mt-1">{receipts.length}</div></div><div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center text-white">📑</div></div><div className="mt-3 h-1 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-slate-900 w-full"></div></div></div>
-            <div className="bg-white p-5 rounded-[20px] border border-slate-100 shadow-sm card-hover"><div className="flex justify-between"><div><div className="text-[11px] font-black text-amber-600 tracking-widest">بانتظار التأكيد</div><div className="text-3xl font-black mt-1 text-amber-600">{receipts.filter(r=>r.status==='pending').length}</div></div><div className="w-12 h-12 gradient-amber rounded-xl flex items-center justify-center text-white shadow-lg shadow-amber-500/20">⏳</div></div><div className="mt-3 h-1 bg-amber-100 rounded-full overflow-hidden"><div className="h-full gradient-amber" style={{width:`${receipts.length? (receipts.filter(r=>r.status==='pending').length/receipts.length)*100:0}%`}}></div></div></div>
-            <div className="bg-white p-5 rounded-[20px] border border-slate-100 shadow-sm card-hover"><div className="flex justify-between"><div><div className="text-[11px] font-black text-emerald-600 tracking-widest">تم تأكيدها</div><div className="text-3xl font-black mt-1 text-emerald-600">{receipts.filter(r=>r.status==='confirmed').length}</div></div><div className="w-12 h-12 gradient-emerald rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">✅</div></div><div className="mt-3 h-1 bg-emerald-100 rounded-full overflow-hidden"><div className="h-full gradient-emerald" style={{width:`${receipts.length? (receipts.filter(r=>r.status==='confirmed').length/receipts.length)*100:0}%`}}></div></div></div>
-            <div className="bg-white p-5 rounded-[20px] border border-slate-100 shadow-sm card-hover"><div className="flex justify-between"><div><div className="text-[11px] font-black text-violet-600 tracking-widest">إجمالي المبالغ</div><div className="text-xl font-black mt-1">{receipts.reduce((s,r)=>s+(parseFloat(r.amount)||0),0).toLocaleString()} <span className="text-sm font-bold text-slate-500">ريال</span></div></div><div className="w-12 h-12 gradient-purple rounded-xl flex items-center justify-center text-white shadow-lg shadow-violet-500/20">💰</div></div><div className="mt-3 flex gap-1">{[...Array(4)].map((_,i)=><div key={i} className="h-1 flex-1 bg-violet-100 rounded-full"><div className="h-full bg-violet-500 rounded-full" style={{width:`${70+i*10}%`}}></div></div>)}</div></div>
+          <div className="grid grid-cols-4 gap-4 mb-8">
+            <div className="bg-white p-5 rounded-[20px] border"><div className="text-[11px] font-black text-slate-400">إجمالي الإيصالات</div><div className="text-3xl font-black mt-1">{receipts.length}</div></div>
+            <div className="bg-white p-5 rounded-[20px] border"><div className="text-[11px] font-black text-amber-600">معلق</div><div className="text-3xl font-black mt-1 text-amber-600">{receipts.filter(r=>r.status==='pending').length}</div></div>
+            <div className="bg-white p-5 rounded-[20px] border"><div className="text-[11px] font-black text-emerald-600">مؤكد</div><div className="text-3xl font-black mt-1 text-emerald-600">{receipts.filter(r=>r.status==='confirmed').length}</div></div>
+            <div className="bg-white p-5 rounded-[20px] border"><div className="text-[11px] font-black text-violet-600">الموظفون</div><div className="text-3xl font-black mt-1">{employees.length}</div></div>
           </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1 space-y-6">
-              <div className="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm">
-                <h3 className="font-black text-[15px] flex items-center gap-2"><span className="w-8 h-8 gradient-teal rounded-lg flex items-center justify-center text-white text-sm">+</span>إضافة موظف جديد</h3>
-                <div className="mt-5 space-y-3">
-                  <input value={eForm.name} onChange={e=>setEForm({...eForm,name:e.target.value})} placeholder="👤 اسم الموظف الكامل" className="w-full p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-teal-500 focus:bg-white outline-none font-bold transition"/>
-                  <div className="grid grid-cols-2 gap-3"><input value={eForm.username} onChange={e=>setEForm({...eForm,username:e.target.value})} placeholder="🔑 اسم المستخدم" className="p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-teal-500 outline-none font-bold"/><input value={eForm.password} onChange={e=>setEForm({...eForm,password:e.target.value})} placeholder="🔒 كلمة المرور" className="p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-teal-500 outline-none font-bold"/></div>
-                  <div className="grid grid-cols-2 gap-3"><input value={eForm.nid} onChange={e=>setEForm({...eForm,nid:e.target.value})} placeholder="🪪 رقم الهوية" className="p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-teal-500 outline-none font-bold"/><input value={eForm.phone} onChange={e=>setEForm({...eForm,phone:e.target.value})} placeholder="📱 الجوال" className="p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-teal-500 outline-none font-bold"/></div>
-                  <input value={eForm.job} onChange={e=>setEForm({...eForm,job:e.target.value})} placeholder="💼 المسمى الوظيفي (عامل، سائق...)" className="w-full p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-teal-500 outline-none font-bold"/>
-                  <select value={eForm.lang} onChange={e=>setEForm({...eForm,lang:e.target.value})} className="w-full p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-teal-500 outline-none font-bold"><option value="ar">🇸🇦 العربية - عربي</option><option value="id">🇮🇩 Indonesia - إندونيسي</option><option value="tl">🇵🇭 Filipino - فلبيني</option><option value="bn">🇧🇩 Bengali - بنغالي</option></select>
-                  <button onClick={addEmployee} className="w-full gradient-teal text-white p-4 rounded-xl font-black shadow-lg shadow-teal-500/20 hover:shadow-xl transition-all hover:-translate-y-0.5">حفظ الموظف ✨</button>
-                </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm">
-                <h3 className="font-black text-[15px] mb-4">➕ إنشاء إيصال صرف</h3>
-                <div className="space-y-3">
-                  <select value={rForm.emp} onChange={e=>setRForm({...rForm,emp:e.target.value})} className="w-full p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold"><option value="">👥 اختر الموظف</option>{employees.map(emp=><option key={emp.id} value={emp.username}>{emp.name} - {emp.language.toUpperCase()} - @{emp.username}</option>)}</select>
-                  <div className="grid grid-cols-2 gap-3"><input type="number" value={rForm.amount} onChange={e=>setRForm({...rForm,amount:e.target.value})} placeholder="💰 المبلغ" className="p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl font-black"/><select value={rForm.curr} onChange={e=>setRForm({...rForm,curr:e.target.value})} className="p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold"><option>ريال سعودي</option><option>جنيه مصري</option><option>دولار</option></select></div>
-                  <input value={rForm.reason} onChange={e=>setRForm({...rForm,reason:e.target.value})} placeholder="📝 المقابل / السبب (مرتب، سلفة...)" className="w-full p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold"/>
-                  <div className="grid grid-cols-2 gap-3"><select value={rForm.method} onChange={e=>setRForm({...rForm,method:e.target.value})} className="p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold"><option>نقداً</option><option>تحويل بنكي</option><option>STC Pay</option><option>انستا باي</option></select><input type="date" value={rForm.date} onChange={e=>setRForm({...rForm,date:e.target.value})} className="p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold"/></div>
-                  <input value={rForm.notes} onChange={e=>setRForm({...rForm,notes:e.target.value})} placeholder="📌 ملاحظات إضافية (اختياري)" className="w-full p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl"/>
-                  <button onClick={createReceipt} className="w-full bg-slate-900 hover:bg-black text-white p-4 rounded-xl font-black transition">إنشاء وإرسال للموظف 🚀</button>
-                </div>
-              </div>
+            <div className="space-y-6">
+              <div className="bg-white p-6 rounded-[24px] border"><h3 className="font-black">➕ إضافة موظف</h3><div className="mt-4 space-y-3"><input value={eForm.name} onChange={e=>setEForm({...eForm,name:e.target.value})} placeholder="اسم الموظف" className="w-full p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold"/><div className="grid grid-cols-2 gap-3"><input value={eForm.username} onChange={e=>setEForm({...eForm,username:e.target.value})} placeholder="اسم المستخدم" className="p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold"/><input value={eForm.password} onChange={e=>setEForm({...eForm,password:e.target.value})} placeholder="كلمة المرور" className="p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold"/></div><div className="grid grid-cols-2 gap-3"><input value={eForm.nid} onChange={e=>setEForm({...eForm,nid:e.target.value})} placeholder="رقم الهوية" className="p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold"/><input value={eForm.phone} onChange={e=>setEForm({...eForm,phone:e.target.value})} placeholder="الجوال" className="p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold"/></div><input value={eForm.job} onChange={e=>setEForm({...eForm,job:e.target.value})} placeholder="الوظيفة" className="w-full p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold"/><select value={eForm.lang} onChange={e=>setEForm({...eForm,lang:e.target.value})} className="w-full p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold"><option value="ar">🇸🇦 عربي</option><option value="id">🇮🇩 Indonesia</option><option value="tl">🇵🇭 Filipino</option><option value="bn">🇧🇩 Bengali</option></select><button onClick={addEmployee} className="w-full bg-teal-700 text-white p-4 rounded-xl font-black">حفظ الموظف ✨</button></div></div>
+              <div className="bg-white p-6 rounded-[24px] border"><h3 className="font-black">➕ إنشاء إيصال</h3><div className="space-y-3 mt-4"><select value={rForm.emp} onChange={e=>setRForm({...rForm,emp:e.target.value})} className="w-full p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold"><option value="">اختر الموظف</option>{employees.map(emp=><option key={emp.id} value={emp.username}>{emp.name} - {emp.language}</option>)}</select><div className="grid grid-cols-2 gap-3"><input type="number" value={rForm.amount} onChange={e=>setRForm({...rForm,amount:e.target.value})} placeholder="المبلغ" className="p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl font-black"/><select value={rForm.curr} onChange={e=>setRForm({...rForm,curr:e.target.value})} className="p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold"><option>ريال سعودي</option><option>جنيه مصري</option><option>دولار</option></select></div><input value={rForm.reason} onChange={e=>setRForm({...rForm,reason:e.target.value})} placeholder="السبب" className="w-full p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold"/><div className="grid grid-cols-2 gap-3"><select value={rForm.method} onChange={e=>setRForm({...rForm,method:e.target.value})} className="p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold"><option>نقداً</option><option>تحويل بنكي</option><option>STC Pay</option></select><input type="date" value={rForm.date} onChange={e=>setRForm({...rForm,date:e.target.value})} className="p-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold"/></div><button onClick={createReceipt} className="w-full bg-slate-900 text-white p-4 rounded-xl font-black">إنشاء وإرسال 🚀</button></div></div>
             </div>
-
-            <div className="lg:col-span-2 space-y-6">
-              <div className="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm">
-                <div className="flex justify-between items-center mb-5"><h3 className="font-black">👥 فريق العمل ({employees.length})</h3><div className="text-xs bg-slate-100 px-3 py-1 rounded-full font-bold">اضغط لعرض تفاصيله</div></div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {employees.length===0 ? <div className="col-span-2 text-center py-12 text-slate-400"><div className="text-4xl mb-2">👥</div><div className="font-bold">لا يوجد موظفون بعد</div><div className="text-xs mt-1">أضف أول موظف من النموذج الجانبي</div></div> :
-                  employees.map(emp=>{
-                    const count = receipts.filter(r=>r.receiver_username===emp.username).length;
-                    const pendingCount = receipts.filter(r=>r.receiver_username===emp.username && r.status==='pending').length;
-                    return (
-                      <div key={emp.id} onClick={()=>setSelectedEmp(selectedEmp?.id===emp.id?null:emp)} className={`p-5 rounded-2xl border-2 cursor-pointer card-hover ${selectedEmp?.id===emp.id?'border-teal-500 bg-teal-50/50 shadow-lg shadow-teal-500/10':'border-slate-100 bg-white hover:border-slate-200'}`}>
-                        <div className="flex justify-between items-start"><div className="flex gap-3"><div className="w-12 h-12 gradient-teal rounded-xl flex items-center justify-center text-white font-black shadow-md">{emp.name.charAt(0)}</div><div><div className="font-black text-[14px]">{emp.name}</div><div className="text-xs text-slate-500 font-bold">@{emp.username} • {emp.job||'موظف'}</div><div className="flex gap-1.5 mt-1.5"><span className="text-[10px] px-2 py-0.5 bg-slate-900 text-white rounded-full font-bold">{emp.language==='ar'?'🇸🇦 AR':emp.language==='id'?'🇮🇩 ID':emp.language==='tl'?'🇵🇭 TL':'🇧🇩 BN'}</span>{pendingCount>0 && <span className="text-[10px] px-2 py-0.5 bg-amber-500 text-white rounded-full font-bold animate-pulse">{pendingCount} معلق</span>}</div></div></div><div className="text-right"><div className="text-2xl font-black">{count}</div><div className="text-[10px] font-black text-slate-400">إيصال</div></div></div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {selectedEmp && (
-                  <div className="mt-6 p-5 bg-gradient-to-br from-teal-50 to-cyan-50 border-2 border-teal-200 rounded-2xl">
-                    <div className="flex justify-between items-center"><h4 className="font-black">👤 {selectedEmp.name} - التفاصيل الكاملة</h4><button onClick={()=>setSelectedEmp(null)} className="px-3 py-1 bg-white rounded-full text-xs font-bold border">إغلاق ✕</button></div>
-                    <div className="grid grid-cols-2 gap-3 mt-4 text-xs"><div className="bg-white p-3 rounded-xl"><span className="text-slate-500">الهوية:</span> <b>{selectedEmp.national_id||'---'}</b></div><div className="bg-white p-3 rounded-xl"><span className="text-slate-500">الجوال:</span> <b>{selectedEmp.phone||'---'}</b></div><div className="bg-white p-3 rounded-xl"><span className="text-slate-500">اللغة:</span> <b>{selectedEmp.language}</b></div><div className="bg-white p-3 rounded-xl"><span className="text-slate-500">الوظيفة:</span> <b>{selectedEmp.job||'---'}</b></div></div>
-                    <div className="mt-4 bg-white rounded-xl overflow-hidden border">
-                      <table className="w-full text-xs"><thead><tr className="bg-slate-50"><th className="p-2.5 text-right">الرقم</th><th>المبلغ</th><th>الحالة</th><th>عرض</th></tr></thead><tbody>{receipts.filter(r=>r.receiver_username===selectedEmp.username).map(r=><tr key={r.id} className="border-t"><td className="p-2.5 font-mono">{r.id}</td><td className="p-2.5 font-black">{r.amount} {r.currency}</td><td className="p-2.5">{r.status==='pending'?<span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-[10px] font-bold">معلق</span>:<span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-[10px] font-bold">مؤكد</span>}</td><td className="p-2.5"><button onClick={()=>{setViewDocRec(r); document.getElementById('modal').style.display='flex';}} className="px-2 py-1 bg-slate-900 text-white rounded-lg text-[11px]">عرض</button></td></tr>)}</tbody></table>
+            <div className="lg:col-span-2">
+              <div className="bg-white p-6 rounded-[24px] border">
+                <h3 className="font-black mb-4">👥 فريق العمل ({employees.length})</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {employees.map(emp=>(
+                    <div key={emp.id} onClick={()=>setSelectedEmp(selectedEmp?.id===emp.id?null:emp)} className={`p-4 rounded-2xl border-2 cursor-pointer ${selectedEmp?.id===emp.id?'border-teal-500 bg-teal-50':'border-slate-100 bg-white'}`}>
+                      <div className="flex justify-between"><div className="w-10 h-10 bg-teal-700 text-white rounded-xl flex items-center justify-center font-black">{emp.name.charAt(0)}</div><span className="text-xs bg-slate-900 text-white px-2 py-1 rounded-full">{emp.language.toUpperCase()}</span></div>
+                      <div className="font-black mt-2">{emp.name}</div><div className="text-xs text-slate-500">@{emp.username} • {emp.job}</div>
                     </div>
+                  ))}
+                </div>
+                {selectedEmp && (
+                  <div className="mt-4 p-4 bg-teal-50 border-2 border-teal-200 rounded-2xl">
+                    <div className="flex justify-between"><b>{selectedEmp.name}</b><button onClick={()=>setSelectedEmp(null)} className="px-2 py-1 bg-white rounded text-xs">إغلاق</button></div>
+                    <div className="mt-3 text-xs">الهوية: {selectedEmp.national_id} - الجوال: {selectedEmp.phone}</div>
                   </div>
                 )}
               </div>
-
-              <div className="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm">
-                <div className="flex flex-col md:flex-row justify-between gap-4 mb-5"><h3 className="font-black">📑 سجل الإيصالات الشامل ({filteredReceipts.length})</h3><div className="flex gap-2"><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 بحث..." className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm w-44"/><select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)} className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"><option value="all">الكل</option><option value="pending">معلق</option><option value="confirmed">مؤكد</option></select></div></div>
-                <div className="overflow-x-auto rounded-xl border border-slate-100"><table className="w-full text-sm"><thead><tr className="bg-slate-50/80"><th className="p-3 text-right font-black text-[11px] tracking-widest text-slate-500">رقم الإيصال</th><th className="p-3 text-right font-black text-[11px]">الموظف</th><th className="p-3 text-right font-black text-[11px]">اللغة</th><th className="p-3 text-right font-black text-[11px]">المبلغ</th><th className="p-3 text-right font-black text-[11px]">الحالة</th><th className="p-3 text-right font-black text-[11px]">إجراء</th></tr></thead><tbody>{filteredReceipts.length===0 ? <tr><td colSpan="6" className="p-12 text-center text-slate-400"><div className="text-3xl mb-2">📭</div><div className="font-bold">لا يوجد إيصالات</div></td></tr> : filteredReceipts.map(r=>{const emp=employees.find(e=>e.username===r.receiver_username); return (<tr key={r.id} className="border-t border-slate-50 hover:bg-slate-50/50 transition"><td className="p-3 font-mono text-xs font-bold">{r.id}</td><td className="p-3"><div className="font-black text-[13px]">{r.receiver_name}</div><div className="text-[11px] text-slate-500">@{r.receiver_username}</div></td><td className="p-3"><span className="px-2 py-1 bg-slate-900 text-white rounded-full text-[10px] font-bold">{r.language?.toUpperCase()}</span></td><td className="p-3 font-black text-teal-700">{r.amount} <span className="text-[11px] text-slate-500 font-bold">{r.currency}</span></td><td className="p-3">{r.status==='pending'?<span className="px-3 py-1 gradient-amber text-white rounded-full text-[11px] font-black shadow-sm">⏳ معلق</span>:<span className="px-3 py-1 gradient-emerald text-white rounded-full text-[11px] font-black shadow-sm">✅ مؤكد</span>}</td><td className="p-3 flex gap-1"><button onClick={()=>{setViewDocRec(r); document.getElementById('modal').style.display='flex';}} className="px-3 py-1.5 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold transition">عرض</button><button onClick={()=>deleteReceipt(r.id)} className="px-2 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-bold transition">🗑️</button></td></tr>);})}</tbody></table></div>
+              <div className="bg-white p-6 rounded-[24px] border mt-6">
+                <div className="flex justify-between mb-4"><h3 className="font-black">📑 الإيصالات ({filteredReceipts.length})</h3><div className="flex gap-2"><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="بحث..." className="p-2 bg-slate-50 border rounded-xl text-sm w-32"/><select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)} className="p-2 bg-slate-50 border rounded-xl text-sm"><option value="all">الكل</option><option value="pending">معلق</option><option value="confirmed">مؤكد</option></select></div></div>
+                <div className="overflow-x-auto rounded-xl border"><table className="w-full text-sm"><thead><tr className="bg-slate-50"><th className="p-3 text-right">الرقم</th><th>الموظف</th><th>المبلغ</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>{filteredReceipts.map(r=><tr key={r.id} className="border-t"><td className="p-3 font-mono text-xs">{r.id}</td><td className="p-3 font-bold">{r.receiver_name}</td><td className="p-3 font-black text-teal-700">{r.amount}</td><td className="p-3">{r.status==='pending'?<span className="px-2 py-1 bg-amber-500 text-white rounded-full text-xs">معلق</span>:<span className="px-2 py-1 bg-emerald-500 text-white rounded-full text-xs">مؤكد</span>}</td><td className="p-3 flex gap-1"><button onClick={()=>setViewDocRec(r)} className="px-3 py-1 bg-slate-900 text-white rounded-xl text-xs">عرض</button><button onClick={()=>deleteReceipt(r.id)} className="px-2 py-1 bg-red-50 text-red-600 rounded-xl text-xs">🗑️</button></td></tr>)}</tbody></table></div>
               </div>
             </div>
           </div>
         </div>
+
+        {viewDocRec && (
+          <div className="modal-overlay" onClick={(e)=>{if(e.target===e.currentTarget){setViewDocRec(null)}}}>
+            <div className="bg-white max-w-2xl w-full rounded-[24px] overflow-hidden shadow-2xl max-h-[90vh] overflow-y-auto">
+              <div id="printable-doc" className="p-8">
+                <div className="text-center border-b-2 border-slate-900 pb-4 mb-6"><div className="w-14 h-14 bg-teal-700 rounded-2xl flex items-center justify-center mx-auto text-white text-xl">📜</div><h2 className="text-xl font-black mt-3">إقرار استلام - وثيقة قانونية</h2><div className="mt-2 font-mono text-xs bg-slate-900 text-white inline-block px-4 py-1 rounded-full">{viewDocRec.id}</div></div>
+                <div className="bg-teal-50 p-4 rounded-2xl border-2 border-teal-100 mb-4"><div className="font-black text-sm mb-2">النص بلغته ({viewDocRec.language}):</div><div className="text-sm leading-7 font-bold bg-white p-4 rounded-xl border">{formatDec(T[viewDocRec.language||'ar']?.dec||T.ar.dec, viewDocRec)}</div></div>
+                <div className="bg-slate-50 p-4 rounded-2xl border-2 border-slate-200 mb-4"><div className="font-black text-sm mb-2">🇸🇦 النص العربي الأصلي:</div><div className="text-xs leading-7 bg-white p-4 rounded-xl border">{formatDec(T.ar.dec, viewDocRec)}</div></div>
+                <table className="w-full border text-sm mb-4"><tr><td className="p-3 bg-slate-50 font-bold w-32">المستلم</td><td className="p-3">{viewDocRec.receiver_name}</td></tr><tr><td className="p-3 bg-slate-50 font-bold">المبلغ</td><td className="p-3 font-black text-xl text-teal-700">{viewDocRec.amount} {viewDocRec.currency}</td></tr><tr><td className="p-3 bg-slate-50 font-bold">السبب</td><td className="p-3">{viewDocRec.reason} - {viewDocRec.method} - {viewDocRec.date}</td></tr></table>
+                <div className="grid grid-cols-2 gap-4 mb-4"><div><div className="text-xs font-black mb-2">✍️ التوقيع:</div>{viewDocRec.signature_url ? <img src={viewDocRec.signature_url} className="w-full border rounded-xl h-32 object-contain"/> : <div className="h-32 border-2 border-dashed rounded-xl flex items-center justify-center text-slate-400 text-xs">لا يوجد</div>}</div><div><div className="text-xs font-black mb-2">📸 الإثبات:</div>{viewDocRec.evidence_url ? <img src={viewDocRec.evidence_url} className="w-full border rounded-xl h-32 object-contain"/> : <div className="h-32 border-2 border-dashed rounded-xl flex items-center justify-center text-slate-400 text-xs">لا يوجد</div>}</div></div>
+                <div className="flex justify-between text-[11px] text-slate-500 border-t pt-3"><span>إنشاء: {viewDocRec.created_at ? new Date(viewDocRec.created_at).toLocaleString('ar-EG') : ''}</span><span>تأكيد: {viewDocRec.confirmed_at ? new Date(viewDocRec.confirmed_at).toLocaleString('ar-EG') : '---'}</span></div>
+              </div>
+              <div className="p-4 bg-slate-50 border-t flex gap-3 no-print"><button onClick={()=>window.print()} className="flex-1 bg-slate-900 text-white p-3 rounded-xl font-black">🖨️ طباعة الوثيقة</button><button onClick={()=>setViewDocRec(null)} className="flex-1 bg-white border-2 border-slate-200 p-3 rounded-xl font-black">إغلاق</button></div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -272,24 +251,22 @@ function App(){
   const myRecs=receipts.filter(r=>r.receiver_username===emp.username); const pending=myRecs.filter(r=>r.status==='pending'); const confirmed=myRecs.filter(r=>r.status==='confirmed');
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <div className="bg-white/80 backdrop-blur-xl border-b border-slate-200/60 p-4 flex justify-between items-center sticky top-0 z-20"><div className="flex items-center gap-3"><div className="w-10 h-10 gradient-teal rounded-xl flex items-center justify-center text-white font-black">{emp.name.charAt(0)}</div><div><div className="font-black text-[14px]">{tr.welcome} {emp.name} 👋</div><div className="text-[11px] text-slate-500 font-bold flex items-center gap-2"><span className="px-2 py-0.5 bg-slate-900 text-white rounded-full text-[10px]">{lang.toUpperCase()} {lang==='ar'?'🇸🇦':lang==='id'?'🇮🇩':lang==='tl'?'🇵🇭':'🇧🇩'}</span><span>{emp.job||'موظف'}</span></div></div></div><button onClick={()=>setUser(null)} className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-xl font-bold text-sm transition">خروج</button></div>
-
+      <div className="bg-white border-b p-4 flex justify-between items-center sticky top-0 z-20"><b>👋 {tr.welcome} {emp.name}</b><button onClick={doLogout} className="px-4 py-2 bg-red-50 text-red-700 rounded-xl font-bold">خروج</button></div>
       <div className="max-w-4xl mx-auto p-5">
         {pending.length>0 && (
           <div className="mb-8">
-            <div className="flex items-center gap-3 mb-5"><div className="w-10 h-10 gradient-amber rounded-xl flex items-center justify-center text-white shadow-lg shadow-amber-500/20">📥</div><div><h3 className="font-black text-lg">{tr.pendingTitle}</h3><p className="text-xs text-slate-500 font-bold">{pending.length} إيصال بانتظار تأكيدك</p></div></div>
+            <h3 className="font-black text-lg mb-4">📥 {tr.pendingTitle} ({pending.length})</h3>
             {pending.map(r=>{
               const decLang=formatDec(T[lang]?.dec||T.ar.dec,r); const decAr=formatDec(T.ar.dec,r); const t=temp[r.id]||{};
               return (
-                <div key={r.id} className="bg-white p-6 rounded-[24px] border-2 border-amber-200 shadow-[0_10px_40px_rgba(245,158,11,.15)] mb-6 card-hover">
-                  <div className="flex justify-between items-start mb-4"><div><div className="font-black text-slate-800">هيبة الاسترخاء للخدمات</div><div className="text-xs text-slate-500 font-bold mt-1">إيصال صرف رقم {r.id}</div></div><div className="px-3 py-1.5 gradient-amber text-white rounded-full text-xs font-black shadow-md">⏳ {tr.pending||'معلق'}</div></div>
-                  <div className="bg-gradient-to-br from-slate-50 to-white p-5 rounded-2xl border-2 border-slate-100 mb-5"><div className="text-[11px] font-black tracking-widest text-slate-400">المبلغ المستحق</div><div className="text-4xl font-black text-teal-700 mt-1 tracking-tight">{r.amount?.toLocaleString()} <span className="text-lg font-bold text-slate-600">{r.currency}</span></div><div className="mt-3 grid grid-cols-3 gap-3 text-xs"><div className="bg-white p-2.5 rounded-xl border"><div className="text-slate-400 font-bold">المقابل</div><div className="font-black mt-0.5">{r.reason}</div></div><div className="bg-white p-2.5 rounded-xl border"><div className="text-slate-400 font-bold">الطريقة</div><div className="font-black mt-0.5">{r.method}</div></div><div className="bg-white p-2.5 rounded-xl border"><div className="text-slate-400 font-bold">التاريخ</div><div className="font-black mt-0.5">{r.date}</div></div></div></div>
-                  <div className="bg-amber-50 border-2 border-amber-200 p-4 rounded-2xl"><label className="flex gap-3 cursor-pointer group"><input type="checkbox" className="w-5 h-5 rounded-lg" onChange={e=>setTemp(prev=>({...prev,[r.id]:{...prev[r.id],checked:e.target.checked}}))}/><span className="font-black text-[13px] group-hover:text-amber-800 transition">{tr.ack}</span></label><div className="mt-3 p-4 bg-white rounded-xl border-2 border-amber-100 text-[13px] leading-7 font-bold">{decLang}</div><div className="mt-2 p-3 bg-slate-50 rounded-xl text-[11px] text-slate-500 leading-6">🇸🇦 AR: {decAr}</div></div>
-                  <div className="mt-6 space-y-5">
-                    <div><label className="font-black text-sm flex items-center gap-2"><span className="w-7 h-7 bg-slate-900 text-white rounded-lg flex items-center justify-center text-xs">1</span>{tr.proof}</label><input type="file" accept="image/*" capture="environment" onChange={e=>handleEvidence(e,r.id)} className="w-full p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl mt-3 focus:border-teal-500 outline-none"/><div className="mt-3">{t.evidence&&<div className="relative"><img src={t.evidence} className="w-full max-h-72 object-contain border-2 border-emerald-200 rounded-2xl bg-emerald-50/50"/><div className="absolute top-3 right-3 px-3 py-1 bg-emerald-500 text-white rounded-full text-xs font-black">✅ تم الرفع</div></div>}</div></div>
-                    <div><label className="font-black text-sm flex items-center gap-2"><span className="w-7 h-7 bg-slate-900 text-white rounded-lg flex items-center justify-center text-xs">2</span>{tr.sign}</label><div className="mt-3"><SignaturePad onSave={(sig)=>setTemp(prev=>({...prev,[r.id]:{...prev[r.id],signature:sig}}))}/>{t.signature&&<div className="mt-2 text-xs font-black text-emerald-600 bg-emerald-50 p-2 rounded-xl">✅ تم حفظ التوقيع بنجاح</div>}</div></div>
-                  </div>
-                  <button disabled={!(t.checked&&t.evidence&&t.signature)} onClick={()=>confirmReceipt(r.id)} className="w-full gradient-teal text-white p-5 rounded-2xl mt-6 font-black text-[16px] shadow-xl shadow-teal-500/20 hover:shadow-2xl hover:shadow-teal-500/30 transition-all hover:-translate-y-1 disabled:opacity-40 disabled:translate-y-0 disabled:shadow-none">{tr.confirm} ✅</button>
+                <div key={r.id} className="bg-white p-6 rounded-[24px] border-2 border-amber-200 shadow-lg mb-6">
+                  <div className="flex justify-between"><b>هيبة الاسترخاء</b><span className="font-mono text-xs bg-slate-100 px-2 py-1 rounded">{r.id}</span></div>
+                  <div className="text-3xl font-black text-teal-700 my-3">{r.amount} {r.currency}</div>
+                  <div className="text-sm text-slate-600">{r.reason} • {r.method} • {r.date}</div>
+                  <div className="mt-4 bg-amber-50 p-4 rounded-2xl border"><label className="flex gap-2 cursor-pointer"><input type="checkbox" onChange={e=>setTemp(prev=>({...prev,[r.id]:{...prev[r.id],checked:e.target.checked}}))}/> <span className="font-black text-sm">{tr.ack}</span></label><div className="mt-3 p-3 bg-white rounded-xl text-sm font-bold">{decLang}</div><div className="mt-2 text-[11px] text-slate-500">AR: {decAr}</div></div>
+                  <div className="mt-4"><label className="font-black text-sm">{tr.proof}</label><input type="file" accept="image/*" capture="environment" onChange={e=>handleEvidence(e,r.id)} className="w-full p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl mt-2"/><div className="mt-3">{t.evidence&&<img src={t.evidence} className="w-full max-h-72 object-contain border-2 border-emerald-200 rounded-2xl"/>}</div></div>
+                  <div className="mt-4"><label className="font-black text-sm">{tr.sign}</label><div className="mt-2"><SignaturePad onSave={(sig)=>setTemp(prev=>({...prev,[r.id]:{...prev[r.id],signature:sig}}))}/></div></div>
+                  <button disabled={!(t.checked&&t.evidence&&t.signature)} onClick={()=>confirmReceipt(r.id)} className="w-full bg-teal-700 text-white p-4 rounded-xl mt-4 font-black disabled:opacity-40">{tr.confirm} ✅</button>
                 </div>
               );
             })}
@@ -297,23 +274,21 @@ function App(){
         )}
 
         <div>
-          <div className="flex items-center gap-3 mb-5"><div className="w-10 h-10 gradient-emerald rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">📊</div><div><h3 className="font-black text-lg">{tr.history}</h3><p className="text-xs text-slate-500 font-bold">{confirmed.length} إيصال مؤكد • {myRecs.reduce((s,r)=>s+(parseFloat(r.amount)||0),0).toLocaleString()} {confirmed[0]?.currency||'ريال'} إجمالي</p></div></div>
-
-          <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
-            <div className="p-5 border-b bg-slate-50/50 flex justify-between items-center"><h4 className="font-black text-sm">سجل الاستلامات المفصل</h4><span className="text-xs bg-slate-900 text-white px-3 py-1 rounded-full font-bold">{confirmed.length} سجل</span></div>
+          <h3 className="font-black text-lg mb-4">📊 {tr.history} ({confirmed.length})</h3>
+          <div className="bg-white rounded-[24px] border overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead><tr className="bg-slate-50/80 text-[11px] font-black tracking-widest text-slate-500"><th className="p-4 text-right">رقم الإيصال</th><th className="p-4 text-right">المبلغ</th><th className="p-4 text-right">السبب</th><th className="p-4 text-right">التاريخ</th><th className="p-4 text-right">الحالة</th><th className="p-4 text-right">الوثيقة</th></tr></thead>
+                <thead><tr className="bg-slate-50 text-[11px] font-black"><th className="p-4 text-right">رقم الإيصال</th><th className="p-4 text-right">المبلغ</th><th className="p-4 text-right">السبب</th><th className="p-4 text-right">التاريخ</th><th className="p-4 text-right">الحالة</th><th className="p-4 text-right">الوثيقة</th></tr></thead>
                 <tbody>
-                  {confirmed.length===0 ? <tr><td colSpan="6" className="p-16 text-center"><div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl">📭</div><div className="font-black text-slate-800">{tr.noPending}</div><div className="text-xs text-slate-500 mt-1 font-bold">ستظهر إيصالاتك المؤكدة هنا بعد التأكيد</div></td></tr> :
+                  {confirmed.length===0 ? <tr><td colSpan="6" className="p-12 text-center text-slate-400">لا يوجد إيصالات مؤكدة</td></tr> :
                     confirmed.map(r=>(
-                      <tr key={r.id} className="border-t border-slate-50 hover:bg-slate-50/80 transition group">
-                        <td className="p-4"><div className="font-mono text-xs font-black bg-slate-100 px-2.5 py-1 rounded-full inline-block group-hover:bg-slate-900 group-hover:text-white transition">{r.id}</div></td>
-                        <td className="p-4"><div className="font-black text-teal-700 text-[15px]">{r.amount?.toLocaleString()} <span className="text-xs text-slate-500">{r.currency}</span></div></td>
-                        <td className="p-4"><div className="font-bold text-[13px]">{r.reason}</div><div className="text-[11px] text-slate-500 font-bold">{r.method}</div></td>
-                        <td className="p-4 text-xs font-bold text-slate-600">{r.date}<div className="text-[10px] text-slate-400">{r.confirmed_at ? new Date(r.confirmed_at).toLocaleDateString('ar-EG') : ''}</div></td>
-                        <td className="p-4"><span className="px-3 py-1.5 gradient-emerald text-white rounded-full text-[11px] font-black shadow-sm">✅ مؤكد</span></td>
-                        <td className="p-4"><button onClick={()=>{setViewDocRec(r); document.getElementById('modal').style.display='flex';}} className="px-4 py-2 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-black shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5">👁️ {tr.view}</button></td>
+                      <tr key={r.id} className="border-t hover:bg-slate-50">
+                        <td className="p-4 font-mono text-xs font-black">{r.id}</td>
+                        <td className="p-4 font-black text-teal-700">{r.amount} {r.currency}</td>
+                        <td className="p-4">{r.reason}</td>
+                        <td className="p-4 text-xs">{r.date}</td>
+                        <td className="p-4"><span className="px-2 py-1 bg-emerald-500 text-white rounded-full text-xs">مؤكد</span></td>
+                        <td className="p-4"><button onClick={()=>setViewDocRec(r)} className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-black">👁️ {tr.view}</button></td>
                       </tr>
                     ))
                   }
@@ -325,52 +300,17 @@ function App(){
       </div>
 
       {viewDocRec && (
-        <div className="bg-white max-w-3xl w-full rounded-[24px] overflow-hidden shadow-[0_25px_80px_rgba(0,0,0,.3)] max-h-[92vh] overflow-y-auto">
-          <div id="printable-doc" className="p-8">
-            <div className="text-center border-b-2 border-slate-900 pb-6 mb-6 relative">
-              <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-full blur-2xl opacity-20"></div>
-              <div className="w-16 h-16 gradient-teal rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">📜</div>
-              <h2 className="text-2xl font-black tracking-tight">{T[viewDocRec.language||lang]?.docTitle||T.ar.docTitle||'إقرار استلام'}</h2>
-              <div className="mt-3 flex justify-center gap-2"><span className="font-mono text-xs bg-slate-900 text-white px-4 py-1.5 rounded-full font-bold">{viewDocRec.id}</span><span className="text-xs bg-teal-100 text-teal-700 px-3 py-1.5 rounded-full font-black">{viewDocRec.language?.toUpperCase()}</span></div>
-              <div className="mt-2 text-xs font-bold text-slate-500">هيبة الاسترخاء للخدمات • وثيقة رسمية معتبرة قانوناً</div>
+        <div className="modal-overlay" onClick={(e)=>{if(e.target===e.currentTarget){setViewDocRec(null)}}}>
+          <div className="bg-white max-w-2xl w-full rounded-[24px] overflow-hidden shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div id="printable-doc" className="p-8">
+              <div className="text-center border-b-2 border-slate-900 pb-4 mb-6"><div className="w-14 h-14 bg-teal-700 rounded-2xl flex items-center justify-center mx-auto text-white">📜</div><h2 className="text-xl font-black mt-3">{T[viewDocRec.language||lang]?.docTitle||'إقرار استلام'}</h2><div className="mt-2 font-mono text-xs bg-slate-900 text-white inline-block px-4 py-1 rounded-full">{viewDocRec.id}</div></div>
+              <div className="bg-teal-50 p-4 rounded-2xl border-2 border-teal-100 mb-4"><div className="font-black text-sm mb-2">النص بلغته:</div><div className="text-sm leading-7 font-bold bg-white p-4 rounded-xl border">{formatDec(T[viewDocRec.language||'ar']?.dec||T.ar.dec, viewDocRec)}</div></div>
+              <div className="bg-slate-50 p-4 rounded-2xl border-2 border-slate-200 mb-4"><div className="font-black text-sm mb-2">🇸🇦 النص العربي:</div><div className="text-xs leading-7 bg-white p-4 rounded-xl border">{formatDec(T.ar.dec, viewDocRec)}</div></div>
+              <table className="w-full border text-sm mb-4"><tr><td className="p-3 bg-slate-50 font-bold w-32">المستلم</td><td className="p-3">{viewDocRec.receiver_name}</td></tr><tr><td className="p-3 bg-slate-50 font-bold">المبلغ</td><td className="p-3 font-black text-xl text-teal-700">{viewDocRec.amount} {viewDocRec.currency}</td></tr><tr><td className="p-3 bg-slate-50 font-bold">السبب</td><td className="p-3">{viewDocRec.reason} - {viewDocRec.method} - {viewDocRec.date}</td></tr></table>
+              <div className="grid grid-cols-2 gap-4 mb-4"><div><div className="text-xs font-black mb-2">✍️ التوقيع:</div>{viewDocRec.signature_url ? <img src={viewDocRec.signature_url} className="w-full border rounded-xl h-32 object-contain"/> : <div className="h-32 border-2 border-dashed rounded-xl flex items-center justify-center text-slate-400 text-xs">لا يوجد</div>}</div><div><div className="text-xs font-black mb-2">📸 الإثبات:</div>{viewDocRec.evidence_url ? <img src={viewDocRec.evidence_url} className="w-full border rounded-xl h-32 object-contain"/> : <div className="h-32 border-2 border-dashed rounded-xl flex items-center justify-center text-slate-400 text-xs">لا يوجد</div>}</div></div>
+              <div className="flex justify-between text-[11px] text-slate-500 border-t pt-3"><span>إنشاء: {viewDocRec.created_at ? new Date(viewDocRec.created_at).toLocaleString('ar-EG') : ''}</span><span>تأكيد: {viewDocRec.confirmed_at ? new Date(viewDocRec.confirmed_at).toLocaleString('ar-EG') : '---'}</span></div>
             </div>
-
-            <div className="bg-gradient-to-br from-teal-50 to-cyan-50 p-5 rounded-2xl border-2 border-teal-100 mb-4">
-              <div className="font-black text-sm mb-3 flex items-center gap-2"><span className="w-6 h-6 bg-teal-600 text-white rounded-lg flex items-center justify-center text-xs">🌐</span>{viewDocRec.language==='id'?'Bahasa Indonesia':viewDocRec.language==='tl'?'Filipino':viewDocRec.language==='bn'?'Bengali':'العربية'} - النص بلغته:</div>
-              <div className="text-[15px] leading-8 font-bold bg-white p-4 rounded-xl border border-teal-100">{formatDec(T[viewDocRec.language||'ar']?.dec||T.ar.dec, viewDocRec)}</div>
-            </div>
-
-            <div className="bg-slate-50 p-5 rounded-2xl border-2 border-slate-200 mb-6">
-              <div className="font-black text-sm mb-3 flex items-center gap-2"><span className="w-6 h-6 bg-slate-900 text-white rounded-lg flex items-center justify-center text-xs">🇸🇦</span>النص القانوني الأصلي (عربي):</div>
-              <div className="text-[13px] leading-8 font-bold text-slate-700 bg-white p-4 rounded-xl border">{formatDec(T.ar.dec, viewDocRec)}</div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div className="space-y-3">
-                <div className="bg-white border-2 border-slate-100 p-4 rounded-2xl"><div className="text-[11px] font-black tracking-widest text-slate-400">المستلم</div><div className="font-black mt-1">{viewDocRec.receiver_name}</div><div className="text-xs text-slate-500 font-bold">@{viewDocRec.receiver_username} • {viewDocRec.receiver_id||'---'}</div></div>
-                <div className="bg-white border-2 border-slate-100 p-4 rounded-2xl"><div className="text-[11px] font-black tracking-widest text-slate-400">المبلغ الإجمالي</div><div className="font-black text-2xl text-teal-700 mt-1">{viewDocRec.amount?.toLocaleString()} <span className="text-sm text-slate-600">{viewDocRec.currency}</span></div></div>
-              </div>
-              <div className="space-y-3">
-                <div className="bg-white border-2 border-slate-100 p-4 rounded-2xl"><div className="text-[11px] font-black tracking-widest text-slate-400">المقابل والطريقة</div><div className="font-bold mt-1 text-sm">{viewDocRec.reason}</div><div className="text-xs text-slate-500 font-bold mt-1">{viewDocRec.method} • {viewDocRec.date}</div>{viewDocRec.notes && <div className="text-xs bg-amber-50 p-2 rounded-lg mt-2 border border-amber-100">📌 {viewDocRec.notes}</div>}</div>
-                <div className="bg-slate-900 text-white p-4 rounded-2xl"><div className="text-[11px] font-black tracking-widest text-slate-400">رقم التوثيق القانوني</div><div className="font-mono font-black mt-1">{viewDocRec.id}</div><div className="text-[10px] text-slate-400 mt-1">موثق إلكترونياً بتوقيع وصورة</div></div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="bg-white border-2 border-slate-100 rounded-2xl p-4"><div className="text-xs font-black mb-3 flex items-center gap-2"><span className="w-6 h-6 bg-slate-900 text-white rounded-lg flex items-center justify-center">✍️</span>توقيع المستلم / Signature</div>{viewDocRec.signature_url ? <img src={viewDocRec.signature_url} className="w-full border-2 border-slate-100 rounded-xl h-32 object-contain bg-slate-50"/> : <div className="h-32 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center text-slate-400"><div className="text-2xl">✍️</div><div className="text-xs font-bold mt-1">لا يوجد توقيع</div></div>}</div>
-              <div className="bg-white border-2 border-slate-100 rounded-2xl p-4"><div className="text-xs font-black mb-3 flex items-center gap-2"><span className="w-6 h-6 bg-emerald-600 text-white rounded-lg flex items-center justify-center">📸</span>إثبات الاستلام / Proof</div>{viewDocRec.evidence_url ? <img src={viewDocRec.evidence_url} className="w-full border-2 border-slate-100 rounded-xl h-32 object-contain bg-slate-50"/> : <div className="h-32 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center text-slate-400"><div className="text-2xl">📸</div><div className="text-xs font-bold mt-1">لا يوجد إثبات</div></div>}</div>
-            </div>
-
-            <div className="bg-slate-50 p-4 rounded-2xl border-2 border-slate-100 flex justify-between text-[11px] font-bold text-slate-600">
-              <div><div className="text-slate-400 text-[10px] tracking-widest">تاريخ الإنشاء</div><div className="mt-1">{viewDocRec.created_at ? new Date(viewDocRec.created_at).toLocaleString('ar-EG') : '---'}</div></div>
-              <div className="text-right"><div className="text-slate-400 text-[10px] tracking-widest">تاريخ التأكيد</div><div className="mt-1 text-emerald-700">{viewDocRec.confirmed_at ? new Date(viewDocRec.confirmed_at).toLocaleString('ar-EG') : 'لم يتم بعد'}</div></div>
-            </div>
-            <div className="text-center text-[10px] font-bold text-slate-400 mt-6 p-3 bg-slate-50 rounded-xl border">🔒 {T.ar.legalFooter} - {viewDocRec.id} • هيبة الاسترخاء</div>
-          </div>
-
-          <div className="p-5 bg-slate-50 border-t-2 border-slate-100 flex gap-3 no-print">
-            <button onClick={()=>window.print()} className="flex-1 bg-slate-900 hover:bg-black text-white p-4 rounded-xl font-black shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2">🖨️ {T[lang]?.print||'طباعة الوثيقة'}</button>
-            <button onClick={()=>{document.getElementById('modal').style.display='none'; setViewDocRec(null);}} className="flex-1 bg-white border-2 border-slate-200 hover:bg-slate-50 p-4 rounded-xl font-black transition">إغلاق ✕</button>
+            <div className="p-4 bg-slate-50 border-t flex gap-3 no-print"><button onClick={()=>window.print()} className="flex-1 bg-slate-900 text-white p-3 rounded-xl font-black">🖨️ {T[lang]?.print||'طباعة الوثيقة'}</button><button onClick={()=>setViewDocRec(null)} className="flex-1 bg-white border-2 border-slate-200 p-3 rounded-xl font-black">إغلاق</button></div>
           </div>
         </div>
       )}
