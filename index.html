@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>React Artifact - Multi-Language</title>
+  <!-- Tailwind CSS CDN (للضمان والتكامل) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#fcfcfc] text-zinc-900 antialiased">
+  <div id="root"></div>
+
+  <!-- تضمين مكتبات React و ReactDOM للتشغيل المباشر -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    // قاموس الترجمات للغات المطلوبة
+    const translations = {
+      en: {
+        title: "System Dashboard & Links",
+        welcome: "Welcome back, manage your system and quick links below.",
+        linksTitle: "Quick Links",
+        link1: "Main Website / Portfolio",
+        link2: "Contact Page",
+        link3: "System Dashboard",
+        langLabel: "Language:"
+      },
+      tl: { // الفلبينية (Tagalog)
+        title: "Dashboard ng Sistema at Mga Link",
+        welcome: "Maligayang pagbabalik, pamahalaan ang iyong sistema at mabilis na mga link sa ibaba.",
+        linksTitle: "Mabilis na Mga Link",
+        link1: "Pangunahing Website / Portfolio",
+        link2: "Pahina ng Pakikipag-ugnayan",
+        link3: "Dashboard ng Sistema",
+        langLabel: "Wika:"
+      },
+      id: { // الإندونيسية
+        title: "Dasbor Sistem & Tautan",
+        welcome: "Selamat datang kembali, kelola sistem dan tautan cepat Anda di bawah ini.",
+        linksTitle: "Tautan Cepat",
+        link1: "Situs Web Utama / Portofolio",
+        link2: "Halaman Kontak",
+        link3: "Dasbor Sistem",
+        langLabel: "Bahasa:"
+      },
+      bn: { // البنغالية
+        title: "সিস্টেম ড্যাশবোর্ড এবং লিঙ্ক",
+        welcome: "স্বাগত, নিচে আপনার সিস্টেম এবং দ্রুত লিঙ্কগুলো পরিচালনা করুন।",
+        linksTitle: "দ্রুত লিঙ্ক",
+        link1: "মূল ওয়েবসাইট / পোর্টফোলিও",
+        link2: "যোগাযোগের পৃষ্ঠা",
+        link3: "সিস্টেম ড্যাশবোর্ড",
+        langLabel: "ভাষা:"
+      }
+    };
+
+    function App() {
+      const [lang, setLang] = useState('en');
+      const t = translations[lang];
+
+      return (
+        <div className="min-h-screen p-6 max-w-4xl mx-auto">
+          {/* شريط اختيار اللغات */}
+          <div className="flex justify-between items-center mb-8 bg-white p-4 rounded-xl shadow-sm border border-zinc-200">
+            <h1 className="text-xl font-bold text-[#0f766e]">Mahmoud App</h1>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-zinc-600">{t.langLabel}</span>
+              <select 
+                value={lang} 
+                onChange={(e) => setLang(e.target.value)}
+                className="border border-zinc-300 rounded-lg px-3 py-1.5 text-sm bg-zinc-50 focus:outline-none focus:border-[#0f766e]"
+              >
+                <option value="en">English</option>
+                <option value="tl">Filipino</option>
+                <option value="id">Indonesia</option>
+                <option value="bn">বাংলা (Bengali)</option>
+              </select>
+            </div>
+          </div>
+
+          {/* محتوى الصفحة الرئيسي */}
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-zinc-200 mb-8">
+            <h2 className="text-2xl font-bold mb-2 text-zinc-800">{t.title}</h2>
+            <p className="text-zinc-600">{t.welcome}</p>
+          </div>
+
+          {/* قسم الروابط السابقة */}
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-zinc-200">
+            <h3 className="text-lg font-bold mb-4 text-zinc-800 border-b pb-2">{t.linksTitle}</h3>
+            <ul className="space-y-3">
+              <li>
+                <a 
+                  href="https://mahmoud-shehab1.github.io/mahmoud-shehab2.github.io/index.html" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-[#0f766e] hover:underline font-medium block p-3 bg-teal-50 rounded-lg border border-teal-100 transition"
+                >
+                  🔗 {t.link1} (https://mahmoud-shehab1.github.io/mahmoud-shehab2.github.io/index.html)
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="https://mahmoud-shehab1.github.io/mahmoud-shehab2.github.io/index.html#contact" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-[#0f766e] hover:underline font-medium block p-3 bg-teal-50 rounded-lg border border-teal-100 transition"
+                >
+                  🔗 {t.link2} (https://mahmoud-shehab1.github.io/mahmoud-shehab2.github.io/index.html#contact)
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
