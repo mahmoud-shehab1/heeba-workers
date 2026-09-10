@@ -1,124 +1,502 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>React Artifact - Multi-Language</title>
-  <!-- Tailwind CSS CDN (للضمان والتكامل) -->
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>هيبة الاسترخاء - نظام الاستلامات متعدد اللغات</title>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap');
+*{font-family:'Cairo',sans-serif}
+.sig-canvas{border:2px dashed #94a3b8;border-radius:12px;touch-action:none;background:white}
+</style>
 </head>
-<body class="bg-[#fcfcfc] text-zinc-900 antialiased">
-  <div id="root"></div>
+<body class="bg-slate-50">
+<div id="root"></div>
 
-  <!-- تضمين مكتبات React و ReactDOM للتشغيل المباشر -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
 
-  <script type="text/babel">
-    const { useState } = React;
+// ========== CONFIG - غير القيم دي من Supabase ==========
+const SUPABASE_URL = 'https://xxx.supabase.co'; // حط رابط مشروعك هنا
+const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY_HERE'; // حط الـ Anon Key هنا
+// ========================================================
 
-    // قاموس الترجمات للغات المطلوبة
-    const translations = {
-      en: {
-        title: "System Dashboard & Links",
-        welcome: "Welcome back, manage your system and quick links below.",
-        linksTitle: "Quick Links",
-        link1: "Main Website / Portfolio",
-        link2: "Contact Page",
-        link3: "System Dashboard",
-        langLabel: "Language:"
-      },
-      tl: { // الفلبينية (Tagalog)
-        title: "Dashboard ng Sistema at Mga Link",
-        welcome: "Maligayang pagbabalik, pamahalaan ang iyong sistema at mabilis na mga link sa ibaba.",
-        linksTitle: "Mabilis na Mga Link",
-        link1: "Pangunahing Website / Portfolio",
-        link2: "Pahina ng Pakikipag-ugnayan",
-        link3: "Dashboard ng Sistema",
-        langLabel: "Wika:"
-      },
-      id: { // الإندونيسية
-        title: "Dasbor Sistem & Tautan",
-        welcome: "Selamat datang kembali, kelola sistem dan tautan cepat Anda di bawah ini.",
-        linksTitle: "Tautan Cepat",
-        link1: "Situs Web Utama / Portofolio",
-        link2: "Halaman Kontak",
-        link3: "Dasbor Sistem",
-        langLabel: "Bahasa:"
-      },
-      bn: { // البنغالية
-        title: "সিস্টেম ড্যাশবোর্ড এবং লিঙ্ক",
-        welcome: "স্বাগত, নিচে আপনার সিস্টেম এবং দ্রুত লিঙ্কগুলো পরিচালনা করুন।",
-        linksTitle: "দ্রুত লিঙ্ক",
-        link1: "মূল ওয়েবসাইট / পোর্টফোলিও",
-        link2: "যোগাযোগের পৃষ্ঠা",
-        link3: "সিস্টেম ড্যাশবোর্ড",
-        langLabel: "ভাষা:"
-      }
+let supabase = null;
+try {
+  if(SUPABASE_URL.includes('xxx')) {
+    console.log('Supabase placeholder - working in localStorage mode');
+  } else {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch(e){ console.log('Supabase not configured, using localStorage'); }
+
+const T = {
+ ar:{login:"دخول",user:"اسم المستخدم",pass:"كلمة المرور",manager:"لوحة المدير",addEmp:"إضافة موظف",name:"اسم الموظف",username:"اسم المستخدم (أو رقم الهوية)",password:"كلمة المرور",nid:"رقم الهوية",phone:"الجوال",job:"الوظيفة",lang:"لغة العامل",save:"حفظ الموظف",empList:"الموظفون",createRec:"إنشاء إيصال",shop:"المحل",amount:"المبلغ",curr:"العملة",reason:"السبب / مقابل",method:"طريقة الصرف",date:"التاريخ",notes:"ملاحظات",selectEmp:"اختر الموظف",pending:"معلق",confirmed:"مؤكد",pendingTitle:"إيصالات بانتظار تأكيدك",history:"سجل استلاماتك",ack:"أقر أنني استلمت المبلغ المذكور كاملاً",proof:"📸 تصوير إثبات الاستلام",sign:"✍️ توقيعك",confirm:"تأكيد الاستلام",logout:"خروج",welcome:"أهلا",view:"عرض الوثيقة",del:"حذف",copy:"نسخ تقرير ثنائي اللغة",noPending:"لا يوجد معلق ✅",total:"الإجمالي",dec:"أقر أنا الموقع أدناه {name} حامل هوية رقم {id} بأنني استلمت من {shop} مبلغ وقدره {amount} {curr} وذلك مقابل {reason} عن طريق {method} بتاريخ {date}. وهذا إقرار مني بذلك."},
+ id:{login:"Masuk",user:"Username",pass:"Password",welcome:"Halo",pendingTitle:"Kwitansi menunggu konfirmasi",history:"Riwayat",ack:"Saya menyatakan telah menerima jumlah tersebut",proof:"📸 Foto bukti penerimaan",sign:"✍️ Tanda tangan",confirm:"Konfirmasi Penerimaan",logout:"Keluar",view:"Lihat Dokumen",noPending:"Tidak ada ✅",dec:"Saya yang bertanda tangan di bawah ini {name} ID {id} menyatakan telah menerima dari {shop} sejumlah {amount} {curr} untuk {reason} melalui {method} pada tanggal {date}."},
+ tl:{login:"Mag-login",user:"Username",pass:"Password",welcome:"Kumusta",pendingTitle:"Resibo na naghihintay",history:"Kasaysayan",ack:"Pinatutunayan kong natanggap ko ang halaga",proof:"📸 Larawan ng patunay",sign:"✍️ Lagda",confirm:"Kumpirmahin",logout:"Logout",view:"Tingnan",noPending:"Wala ✅",dec:"Ako na nakalagda sa ibaba {name} ID {id} ay nagpapatunay na natanggap ko mula sa {shop} ang halagang {amount} {curr} para sa {reason} sa pamamagitan ng {method} noong {date}."},
+ bn:{login:"লগইন",user:"ইউজারনেম",pass:"পাসওয়ার্ড",welcome:"হ্যালো",pendingTitle:"নিশ্চিতকরণের অপেক্ষায়",history:"ইতিহাস",ack:"আমি পরিমাণ গ্রহণ করেছি",proof:"📸 প্রমাণের ছবি",sign:"✍️ স্বাক্ষর",confirm:"নিশ্চিত করুন",logout:"লগআউট",view:"দেখুন",noPending:"কিছুই নেই ✅",dec:"আমি নিম্ন স্বাক্ষরকারী {name} আইডি {id} এতদ্বারা স্বীকার করছি যে আমি {shop} থেকে {amount} {curr} পরিমাণ {reason} এর জন্য {method} এর মাধ্যমে {date} তারিখে গ্রহণ করেছি।"}
+};
+
+function formatDec(tmpl, r){
+  return tmpl.replace('{name}', r.receiver_name).replace('{id}', r.receiver_id||'---').replace('{shop}', r.shop_name).replace('{amount}', r.amount).replace('{curr}', r.currency).replace('{reason}', r.reason).replace('{method}', r.method).replace('{date}', r.date);
+}
+
+function SignaturePad({ onSave }){
+  const canvasRef = useRef(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  useEffect(()=>{
+    const c = canvasRef.current;
+    const ctx = c.getContext('2d');
+    ctx.lineWidth=2; ctx.lineCap='round'; ctx.strokeStyle='#0f172a';
+    const getPos = (e)=>{
+      const rect=c.getBoundingClientRect();
+      const t=e.touches?e.touches[0]:e;
+      return {x:t.clientX-rect.left, y:t.clientY-rect.top};
     };
+    const start = (e)=>{ setIsDrawing(true); const p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); };
+    const move = (e)=>{ if(!isDrawing) return; const p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); };
+    const end = ()=> setIsDrawing(false);
+    c.addEventListener('mousedown', start);
+    c.addEventListener('mousemove', move);
+    c.addEventListener('mouseup', end);
+    c.addEventListener('touchstart', (e)=>{e.preventDefault(); start(e)}, {passive:false});
+    c.addEventListener('touchmove', (e)=>{e.preventDefault(); move(e)}, {passive:false});
+    c.addEventListener('touchend', end);
+    return ()=>{
+      c.removeEventListener('mousedown', start);
+      c.removeEventListener('mousemove', move);
+      c.removeEventListener('mouseup', end);
+    };
+  }, [isDrawing]);
 
-    function App() {
-      const [lang, setLang] = useState('en');
-      const t = translations[lang];
+  const clear = ()=>{
+    const c=canvasRef.current;
+    c.getContext('2d').clearRect(0,0,c.width,c.height);
+    onSave('');
+  };
+  const save = ()=>{
+    const data=canvasRef.current.toDataURL();
+    if(data.length<1500){ alert('وقع أولاً'); return; }
+    onSave(data);
+  };
+  return (
+    <div>
+      <canvas ref={canvasRef} width="350" height="150" className="sig-canvas w-full"></canvas>
+      <div className="flex gap-2 mt-2">
+        <button onClick={clear} className="px-3 py-1 bg-slate-100 rounded text-sm">مسح</button>
+        <button onClick={save} className="px-3 py-1 bg-teal-600 text-white rounded text-sm">حفظ التوقيع</button>
+      </div>
+    </div>
+  );
+}
 
-      return (
-        <div className="min-h-screen p-6 max-w-4xl mx-auto">
-          {/* شريط اختيار اللغات */}
-          <div className="flex justify-between items-center mb-8 bg-white p-4 rounded-xl shadow-sm border border-zinc-200">
-            <h1 className="text-xl font-bold text-[#0f766e]">Mahmoud App</h1>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-zinc-600">{t.langLabel}</span>
-              <select 
-                value={lang} 
-                onChange={(e) => setLang(e.target.value)}
-                className="border border-zinc-300 rounded-lg px-3 py-1.5 text-sm bg-zinc-50 focus:outline-none focus:border-[#0f766e]"
-              >
-                <option value="en">English</option>
-                <option value="tl">Filipino</option>
-                <option value="id">Indonesia</option>
-                <option value="bn">বাংলা (Bengali)</option>
+function App(){
+  const [user, setUser] = useState(null); // {role, data}
+  const [employees, setEmployees] = useState([]);
+  const [receipts, setReceipts] = useState([]);
+  const [loginU, setLoginU] = useState('');
+  const [loginP, setLoginP] = useState('');
+  const [selectedEmp, setSelectedEmp] = useState(null);
+  const [temp, setTemp] = useState({}); // receiptId -> {evidence, signature, checked}
+
+  // Form states
+  const [eForm, setEForm] = useState({name:'', username:'', password:'', nid:'', phone:'', job:'', lang:'ar'});
+  const [rForm, setRForm] = useState({shop:'هيبة الاسترخاء', emp:'', amount:'', curr:'ريال سعودي', reason:'', method:'نقداً', date:new Date().toISOString().split('T')[0], notes:''});
+
+  useEffect(()=>{
+    loadData();
+  }, []);
+
+  async function loadData(){
+    if(supabase){
+      const {data: emps} = await supabase.from('employees').select('*').order('created_at', {ascending:false});
+      const {data: recs} = await supabase.from('receipts').select('*').order('created_at', {ascending:false});
+      if(emps) setEmployees(emps);
+      if(recs) setReceipts(recs);
+    } else {
+      setEmployees(JSON.parse(localStorage.getItem('shop_employees_multi')||'[]'));
+      setReceipts(JSON.parse(localStorage.getItem('shop_receipts_multi')||'[]'));
+    }
+  }
+
+  function saveLocal(){
+    if(!supabase){
+      localStorage.setItem('shop_employees_multi', JSON.stringify(employees));
+      localStorage.setItem('shop_receipts_multi', JSON.stringify(receipts));
+    }
+  }
+  useEffect(()=>{ saveLocal(); }, [employees, receipts]);
+
+  async function doLogin(){
+    if(loginU==='هيبة الاسترخاء' && loginP==='123123'){
+      setUser({role:'manager'});
+      return;
+    }
+    // check employees
+    let emp = employees.find(e=>e.username===loginU && e.password===loginP);
+    if(!emp && supabase){
+      const {data} = await supabase.from('employees').select('*').eq('username', loginU).eq('password', loginP).single();
+      emp=data;
+    }
+    if(emp){
+      setUser({role:'employee', data:emp});
+    } else {
+      alert('بيانات خاطئة - تأكد من اسم المستخدم وكلمة المرور');
+    }
+  }
+
+  async function addEmployee(){
+    if(!eForm.name||!eForm.username||!eForm.password){ alert('املأ الاسم والمستخدم وكلمة المرور'); return; }
+    const newEmp = {
+      id: 'EMP-'+Math.floor(1000+Math.random()*9000),
+      name: eForm.name,
+      username: eForm.username,
+      password: eForm.password,
+      national_id: eForm.nid,
+      nationalId: eForm.nid,
+      phone: eForm.phone,
+      job: eForm.job,
+      language: eForm.lang,
+      created_at: new Date().toISOString()
+    };
+    if(supabase){
+      const {data, error} = await supabase.from('employees').insert(newEmp).select();
+      if(error){ alert('خطأ: '+error.message); return; }
+      setEmployees([data[0], ...employees]);
+    } else {
+      setEmployees([newEmp, ...employees]);
+    }
+    setEForm({name:'', username:'', password:'', nid:'', phone:'', job:'', lang:'ar'});
+    alert('تم إضافة '+newEmp.name+' بلغته '+newEmp.language);
+  }
+
+  async function createReceipt(){
+    if(!rForm.emp||!rForm.amount||!rForm.reason){ alert('اختر الموظف والمبلغ والسبب'); return; }
+    const emp = employees.find(e=>e.username===rForm.emp);
+    if(!emp){ alert('الموظف غير موجود'); return; }
+    const rec = {
+      id: 'REC-'+new Date().getFullYear()+'-'+Math.floor(1000+Math.random()*9000),
+      shop_name: rForm.shop,
+      shopName: rForm.shop,
+      receiver_name: emp.name,
+      receiverName: emp.name,
+      receiver_username: emp.username,
+      receiverUsername: emp.username,
+      receiver_id: emp.national_id||emp.nationalId,
+      receiverId: emp.national_id||emp.nationalId,
+      amount: parseFloat(rForm.amount),
+      currency: rForm.curr,
+      reason: rForm.reason,
+      method: rForm.method,
+      date: rForm.date,
+      notes: rForm.notes,
+      status: 'pending',
+      language: emp.language,
+      evidence_url: '',
+      signature_url: '',
+      evidencePhoto: '',
+      signature: '',
+      created_at: new Date().toISOString(),
+      createdAt: new Date().toISOString()
+    };
+    if(supabase){
+      const {data, error} = await supabase.from('receipts').insert(rec).select();
+      if(error){ alert(error.message); return; }
+      setReceipts([data[0], ...receipts]);
+    } else {
+      setReceipts([rec, ...receipts]);
+    }
+    setRForm({...rForm, amount:'', reason:'', notes:''});
+    alert('تم إنشاء '+rec.id+' للموظف '+emp.name);
+  }
+
+  function handleEvidence(e, recId){
+    const file=e.target.files[0];
+    if(!file) return;
+    const reader=new FileReader();
+    reader.onload=(ev)=>{
+      setTemp(prev=>({...prev, [recId]:{...prev[recId], evidence:ev.target.result}}));
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function confirmReceipt(recId){
+    const t=temp[recId];
+    if(!t?.checked||!t?.evidence||!t?.signature){ alert('أكمل الإقرار والصورة والتوقيع'); return; }
+    const rec = receipts.find(r=>r.id===recId);
+    let evidenceUrl = t.evidence;
+    let signatureUrl = t.signature;
+
+    if(supabase){
+      // Upload to storage if configured
+      try{
+        // For simplicity, store base64 directly in DB for this version
+        const {error} = await supabase.from('receipts').update({
+          status:'confirmed',
+          confirmed_at: new Date().toISOString(),
+          evidence_url: evidenceUrl,
+          signature_url: signatureUrl,
+          evidencePhoto: evidenceUrl,
+          signature: signatureUrl
+        }).eq('id', recId);
+        if(error) throw error;
+      }catch(err){ alert('خطأ في التأكيد: '+err.message); return; }
+    }
+    setReceipts(prev=>prev.map(r=>r.id===recId?{...r, status:'confirmed', confirmed_at:new Date().toISOString(), confirmedAt:new Date().toISOString(), evidence_url:evidenceUrl, signature_url:signatureUrl, evidencePhoto:evidenceUrl, signature:evidenceUrl, evidencePhoto:evidenceUrl, signature:signatureUrl}:r));
+    alert('تم التأكيد بنجاح ✅');
+  }
+
+  if(!user){
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm">
+          <h1 className="text-2xl font-extrabold text-center text-teal-700">هيبة الاسترخاء</h1>
+          <p className="text-center text-slate-500 text-sm mt-1">نظام الاستلامات متعدد اللغات 🌐</p>
+          <div className="mt-6">
+            <label className="text-sm">اسم المستخدم</label>
+            <input value={loginU} onChange={e=>setLoginU(e.target.value)} className="w-full p-3 border rounded-xl mt-1" placeholder="هيبة الاسترخاء"/>
+            <label className="text-sm mt-3 block">كلمة المرور</label>
+            <input type="password" value={loginP} onChange={e=>setLoginP(e.target.value)} className="w-full p-3 border rounded-xl mt-1" placeholder="123123"/>
+            <button onClick={doLogin} className="w-full bg-teal-700 text-white p-3 rounded-xl mt-4 font-bold">دخول</button>
+            <div className="mt-4 text-[11px] text-slate-400">
+              مدير: هيبة الاسترخاء / 123123<br/>
+              موظف: بيانات من إنشاء المدير<br/>
+              {supabase ? '🟢 متصل بـ Supabase' : '🟡 وضع محلي - ضع بيانات Supabase في الكود'}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if(user.role==='manager'){
+    const total=receipts.length;
+    const pending=receipts.filter(r=>r.status==='pending').length;
+    const confirmed=receipts.filter(r=>r.status==='confirmed').length;
+    return (
+      <div>
+        <div className="bg-white border-b p-4 flex justify-between items-center sticky top-0 z-10">
+          <div><b>👔 لوحة المدير - هيبة الاسترخاء</b> <span className="text-xs text-slate-500 mr-3">متصل بـ {supabase?'Supabase':'Local'}</span></div>
+          <button onClick={()=>setUser(null)} className="px-4 py-2 bg-red-50 text-red-700 rounded-xl">خروج</button>
+        </div>
+        <div className="max-w-6xl mx-auto p-4">
+          <div className="grid grid-cols-4 gap-3 mb-4">
+            <div className="bg-white p-4 rounded-xl border-r-4 border-teal-600"><div className="text-xs text-slate-500">الإجمالي</div><div className="text-2xl font-bold">{total}</div></div>
+            <div className="bg-white p-4 rounded-xl border-r-4 border-amber-500"><div className="text-xs text-slate-500">معلق</div><div className="text-2xl font-bold text-amber-600">{pending}</div></div>
+            <div className="bg-white p-4 rounded-xl border-r-4 border-emerald-500"><div className="text-xs text-slate-500">مؤكد</div><div className="text-2xl font-bold text-emerald-600">{confirmed}</div></div>
+            <div className="bg-white p-4 rounded-xl"><div className="text-xs text-slate-500">الموظفون</div><div className="text-2xl font-bold">{employees.length}</div></div>
+          </div>
+
+          <div className="bg-white p-5 rounded-2xl shadow-sm border">
+            <h3 className="font-bold mb-3">➕ إضافة موظف جديد (مع تحديد لغته)</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <input value={eForm.name} onChange={e=>setEForm({...eForm,name:e.target.value})} placeholder="اسم الموظف" className="p-3 border rounded-xl"/>
+              <input value={eForm.username} onChange={e=>setEForm({...eForm,username:e.target.value})} placeholder="اسم المستخدم (أو رقم الهوية)" className="p-3 border rounded-xl"/>
+              <input value={eForm.password} onChange={e=>setEForm({...eForm,password:e.target.value})} placeholder="كلمة المرور" className="p-3 border rounded-xl"/>
+              <input value={eForm.nid} onChange={e=>setEForm({...eForm,nid:e.target.value})} placeholder="رقم الهوية" className="p-3 border rounded-xl"/>
+              <input value={eForm.phone} onChange={e=>setEForm({...eForm,phone:e.target.value})} placeholder="الجوال" className="p-3 border rounded-xl"/>
+              <input value={eForm.job} onChange={e=>setEForm({...eForm,job:e.target.value})} placeholder="الوظيفة" className="p-3 border rounded-xl"/>
+              <select value={eForm.lang} onChange={e=>setEForm({...eForm,lang:e.target.value})} className="p-3 border rounded-xl">
+                <option value="ar">🇸🇦 عربي</option>
+                <option value="id">🇮🇩 Indonesia</option>
+                <option value="tl">🇵🇭 Filipino</option>
+                <option value="bn">🇧🇩 Bengali</option>
               </select>
+            </div>
+            <button onClick={addEmployee} className="w-full bg-teal-700 text-white p-3 rounded-xl mt-3 font-bold">حفظ الموظف</button>
+          </div>
+
+          <div className="mt-6">
+            <h3 className="font-bold mb-2">👥 الموظفون ({employees.length}) - اضغط لرؤية تفاصيله</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {employees.map(emp=>(
+                <div key={emp.id} onClick={()=>setSelectedEmp(emp)} className={`bg-white p-4 rounded-xl border cursor-pointer hover:shadow-md ${selectedEmp?.id===emp.id?'ring-2 ring-teal-600':''}`}>
+                  <div className="flex justify-between"><div className="w-10 h-10 bg-teal-700 text-white rounded-full flex items-center justify-center font-bold">{emp.name.charAt(0)}</div><span className="text-xs px-2 py-1 rounded-full bg-slate-100">{emp.language==='ar'?'🇸🇦':emp.language==='id'?'🇮🇩':emp.language==='tl'?'🇵🇭':'🇧🇩'} {emp.language.toUpperCase()}</span></div>
+                  <div className="font-bold mt-2">{emp.name}</div>
+                  <div className="text-xs text-slate-500">@{emp.username} - {emp.job}</div>
+                  <div className="text-xs mt-2">📑 {receipts.filter(r=>r.receiver_username===emp.username||r.receiverUsername===emp.username).length} إيصال</div>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* محتوى الصفحة الرئيسي */}
-          <div className="bg-white p-8 rounded-2xl shadow-sm border border-zinc-200 mb-8">
-            <h2 className="text-2xl font-bold mb-2 text-zinc-800">{t.title}</h2>
-            <p className="text-zinc-600">{t.welcome}</p>
+          {selectedEmp && (
+            <div className="bg-teal-50 border border-teal-200 p-4 rounded-2xl mt-4">
+              <div className="flex justify-between"><h3 className="font-bold">👤 {selectedEmp.name} - تقرير كامل</h3><button onClick={()=>setSelectedEmp(null)} className="px-3 py-1 bg-white rounded">إغلاق</button></div>
+              <div className="mt-3 text-sm">اللغة: {selectedEmp.language} | الهوية: {selectedEmp.national_id||selectedEmp.nationalId} | الجوال: {selectedEmp.phone}</div>
+              <div className="mt-3">
+                <table className="w-full bg-white rounded-xl overflow-hidden text-sm">
+                  <tr className="bg-slate-50"><th className="p-2 text-right">الرقم</th><th className="p-2">المبلغ</th><th className="p-2">الحالة</th><th className="p-2">عرض</th></tr>
+                  {receipts.filter(r=>r.receiver_username===selectedEmp.username||r.receiverUsername===selectedEmp.username).map(r=>(
+                    <tr key={r.id} className="border-t"><td className="p-2 font-mono text-xs">{r.id}</td><td className="p-2">{r.amount} {r.currency}</td><td className="p-2">{r.status==='pending'?'⏳':'✅'} {r.status}</td><td className="p-2"><button onClick={()=>alert(formatDec(T[selectedEmp.language]?.dec||T.ar.dec, r)+'\n\n'+formatDec(T.ar.dec,r))} className="px-2 py-1 bg-slate-100 rounded">عرض ثنائي اللغة</button></td></tr>
+                  ))}
+                </table>
+              </div>
+            </div>
+          )}
+
+          <div className="bg-white p-5 rounded-2xl shadow-sm border mt-6">
+            <h3 className="font-bold mb-3">➕ إنشاء إيصال صرف</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <input value={rForm.shop} onChange={e=>setRForm({...rForm,shop:e.target.value})} placeholder="اسم المحل" className="p-3 border rounded-xl"/>
+              <select value={rForm.emp} onChange={e=>setRForm({...rForm,emp:e.target.value})} className="p-3 border rounded-xl">
+                <option value="">-- اختر الموظف --</option>
+                {employees.map(emp=><option key={emp.id} value={emp.username}>{emp.name} (@{emp.username}) - {emp.language}</option>)}
+              </select>
+              <input type="number" value={rForm.amount} onChange={e=>setRForm({...rForm,amount:e.target.value})} placeholder="المبلغ" className="p-3 border rounded-xl"/>
+              <select value={rForm.curr} onChange={e=>setRForm({...rForm,curr:e.target.value})} className="p-3 border rounded-xl"><option>ريال سعودي</option><option>جنيه مصري</option><option>دولار</option></select>
+              <select value={rForm.method} onChange={e=>setRForm({...rForm,method:e.target.value})} className="p-3 border rounded-xl"><option>نقداً</option><option>تحويل بنكي</option><option>STC Pay</option></select>
+              <input type="date" value={rForm.date} onChange={e=>setRForm({...rForm,date:e.target.value})} className="p-3 border rounded-xl"/>
+              <input value={rForm.reason} onChange={e=>setRForm({...rForm,reason:e.target.value})} placeholder="السبب" className="p-3 border rounded-xl col-span-2"/>
+            </div>
+            <button onClick={createReceipt} className="w-full bg-teal-700 text-white p-3 rounded-xl mt-3 font-bold">إنشاء وإرسال للموظف</button>
           </div>
 
-          {/* قسم الروابط السابقة */}
-          <div className="bg-white p-8 rounded-2xl shadow-sm border border-zinc-200">
-            <h3 className="text-lg font-bold mb-4 text-zinc-800 border-b pb-2">{t.linksTitle}</h3>
-            <ul className="space-y-3">
-              <li>
-                <a 
-                  href="https://mahmoud-shehab1.github.io/mahmoud-shehab2.github.io/index.html" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-[#0f766e] hover:underline font-medium block p-3 bg-teal-50 rounded-lg border border-teal-100 transition"
-                >
-                  🔗 {t.link1} (https://mahmoud-shehab1.github.io/mahmoud-shehab2.github.io/index.html)
-                </a>
-              </li>
-              <li>
-                <a 
-                  href="https://mahmoud-shehab1.github.io/mahmoud-shehab2.github.io/index.html#contact" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-[#0f766e] hover:underline font-medium block p-3 bg-teal-50 rounded-lg border border-teal-100 transition"
-                >
-                  🔗 {t.link2} (https://mahmoud-shehab1.github.io/mahmoud-shehab2.github.io/index.html#contact)
-                </a>
-              </li>
-            </ul>
+          <div className="bg-white p-4 rounded-2xl mt-4">
+            <h3 className="font-bold">📑 كل الإيصالات</h3>
+            <table className="w-full text-sm mt-3">
+              <thead><tr className="bg-slate-50"><th className="p-2 text-right">الرقم</th><th>الموظف</th><th>اللغة</th><th>المبلغ</th><th>الحالة</th></tr></thead>
+              <tbody>{receipts.map(r=><tr key={r.id} className="border-t"><td className="p-2 font-mono text-xs">{r.id}</td><td className="p-2">{r.receiver_name||r.receiverName}</td><td className="p-2">{r.language}</td><td className="p-2">{r.amount} {r.currency}</td><td className="p-2">{r.status}</td></tr>)}</tbody>
+            </table>
           </div>
         </div>
-      );
-    }
+      </div>
+    );
+  }
 
-    ReactDOM.render(<App />, document.getElementById('root'));
-  </script>
+  // Employee view
+  const emp = user.data;
+  const lang = emp.language||'ar';
+  const tr = T[lang]||T.ar;
+  const myRecs = receipts.filter(r=> (r.receiver_username===emp.username||r.receiverUsername===emp.username));
+  const pending = myRecs.filter(r=>r.status==='pending');
+  const confirmed = myRecs.filter(r=>r.status==='confirmed');
+
+  return (
+    <div>
+      <div className="bg-white border-b p-4 flex justify-between items-center">
+        <div><b>👋 {tr.welcome} {emp.name}</b> <span className="ml-2 text-xs bg-slate-100 px-2 py-1 rounded">{lang.toUpperCase()}</span></div>
+        <button onClick={()=>setUser(null)} className="px-3 py-1 bg-red-50 text-red-700 rounded">{tr.logout}</button>
+      </div>
+      <div className="max-w-2xl mx-auto p-4">
+        <div className="bg-teal-700 text-white p-4 rounded-2xl mb-4">
+          <div className="text-lg font-bold">{tr.pendingTitle} ({pending.length})</div>
+          <div className="text-sm opacity-90">هيبة الاسترخاء</div>
+        </div>
+
+        {pending.length===0 ? <div className="bg-white p-6 rounded-2xl text-center text-slate-400">{tr.noPending}</div> :
+          pending.map(r=>{
+            const decLang = formatDec(T[lang]?.dec||T.ar.dec, r);
+            const decAr = formatDec(T.ar.dec, r);
+            const t = temp[r.id]||{};
+            return (
+              <div key={r.id} className="bg-white p-4 rounded-2xl border-r-4 border-amber-500 mb-4 shadow-sm">
+                <div className="flex justify-between"><b>هيبة الاسترخاء</b><span className="font-mono text-xs bg-slate-100 px-2 py-1 rounded">{r.id}</span></div>
+                <div className="text-2xl font-extrabold text-teal-700 my-2">{r.amount} {r.currency}</div>
+                <div className="text-sm">{r.reason} - {r.method} - {r.date}</div>
+
+                <div className="mt-3 bg-amber-50 p-3 rounded-xl border border-amber-200">
+                  <label className="flex gap-2 cursor-pointer"><input type="checkbox" onChange={e=>setTemp(prev=>({...prev, [r.id]:{...prev[r.id], checked:e.target.checked}}))}/> <span className="font-bold text-sm">{tr.ack}</span></label>
+                  <div className="mt-2 p-2 bg-white rounded text-sm leading-relaxed">{decLang}</div>
+                  <div className="mt-2 p-2 bg-slate-50 rounded text-[11px] text-slate-500">🇸🇦 العربية: {decAr}</div>
+                </div>
+
+                <div className="mt-3">
+                  <label className="text-sm font-bold">{tr.proof}</label>
+                  <input type="file" accept="image/*" capture="environment" onChange={e=>handleEvidence(e, r.id)} className="w-full p-2 border rounded-xl mt-1"/>
+                  {t.evidence && <img src={t.evidence} className="mt-2 w-full max-h-48 object-contain border rounded-xl"/>}
+                </div>
+
+                <div className="mt-3">
+                  <label className="text-sm font-bold">{tr.sign}</label>
+                  <SignaturePad onSave={(sig)=>setTemp(prev=>({...prev, [r.id]:{...prev[r.id], signature:sig}}))}/>
+                  {t.signature && <div className="text-xs text-green-600 mt-1">✅ تم حفظ التوقيع</div>}
+                </div>
+
+                <button
+                  disabled={!(t.checked && t.evidence && t.signature)}
+                  onClick={()=>confirmReceipt(r.id)}
+                  className="w-full bg-teal-700 text-white p-3 rounded-xl mt-3 font-bold disabled:opacity-40"
+                >{tr.confirm} ✅</button>
+              </div>
+            );
+          })
+        }
+
+        <div className="mt-6">
+          <h3 className="font-bold mb-2">{tr.history} ({confirmed.length})</h3>
+          {confirmed.map(r=>(
+            <div key={r.id} className="bg-white p-3 rounded-xl border flex justify-between items-center mb-2 border-r-4 border-emerald-500">
+              <div><div className="font-bold">{r.amount} {r.currency} - {r.reason}</div><div className="text-xs text-slate-500">{r.id}</div></div>
+              <div className="text-xs text-emerald-600">✅ {r.status}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App/>);
+</script>
+
+<!-- 
+===== تعليمات Supabase =====
+
+1. في Supabase > SQL Editor نفذ هذا:
+
+create table employees (
+  id text primary key,
+  name text,
+  username text unique,
+  password text,
+  national_id text,
+  phone text,
+  job text,
+  language text,
+  created_at timestamp default now()
+);
+
+create table receipts (
+  id text primary key,
+  shop_name text,
+  receiver_name text,
+  receiver_username text,
+  receiver_id text,
+  amount numeric,
+  currency text,
+  reason text,
+  method text,
+  date date,
+  notes text,
+  status text,
+  language text,
+  evidence_url text,
+  signature_url text,
+  created_at timestamp default now(),
+  confirmed_at timestamp
+);
+
+-- تفعيل RLS و policies للتجربة (مؤقت):
+alter table employees enable row level security;
+alter table receipts enable row level security;
+create policy "Allow all" on employees for all using (true) with check (true);
+create policy "Allow all" on receipts for all using (true) with check (true);
+
+2. في Storage أنشئ bucket باسم receipts-evidence (public)
+
+3. غير القيم في أعلى الكود:
+const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
+
+4. ارفع index.html على GitHub repo heeba-workers
+
+-->
 </body>
 </html>
